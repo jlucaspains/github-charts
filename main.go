@@ -3,206 +3,155 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"sort"
-	"time"
+	"os/signal"
+	"strconv"
+	"syscall"
 
-	"github.com/Khan/genqlient/graphql"
-	"github.com/wcharczuk/go-chart/v2"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jlucaspains/github-charts/db"
+	"github.com/jlucaspains/github-charts/handlers"
+	"github.com/jlucaspains/github-charts/jobs"
+	"github.com/jlucaspains/github-charts/midlewares"
+	"github.com/joho/godotenv"
 )
 
-type authedTransport struct {
-	key     string
-	wrapped http.RoundTripper
-}
-
-func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", "bearer "+t.key)
-	return t.wrapped.RoundTrip(req)
-}
-
-type Iteration struct {
-	Title     string    `json:"title"`
-	StartDate time.Time `json:"startDate"`
-	EndDate   time.Time `json:"endDate"`
-}
-
-type Issue struct {
-	Title     string    `json:"title"`
-	CreatedAt time.Time `json:"createdAt"`
-	ClosedAt  time.Time `json:"closedAt"`
-	Status    string    `json:"status"`
-	Effort    float64   `json:"effort"`
-	Labels    []string  `json:"labels"`
-	Iteration Iteration `json:"iteration"`
-}
-
-type Project struct {
-	Title  string  `json:"title"`
-	Issues []Issue `json:"issues"`
+func loadEnv() {
+	// outside of local environment, variables should be
+	// OS environment variables
+	env := os.Getenv("ENV")
+	if err := godotenv.Load(); err != nil && env == "" {
+		log.Fatal(fmt.Printf("Error loading .env file: %s", err))
+	}
 }
 
 func main() {
-	println("Hello, World!")
+	loadEnv()
 
-	var err error
-	defer func() {
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	ctx := context.Background()
+	queries, dispose := initDB(ctx)
+	defer dispose()
+
+	dataPullJobDispose := startDataPullJob(queries)
+	defer dataPullJobDispose()
+
+	webDispose := startWebServer(queries)
+	defer webDispose(ctx)
+
+	<-done
+
+	log.Print("Stopping jobs...")
+	log.Print("Stopping web server...")
+}
+
+func startDataPullJob(queries *db.Queries) func() {
+	jobCron := os.Getenv("DATA_PULL_JOB_CRON")
+	if jobCron == "" {
+		log.Fatalf("must set DATA_PULL_JOB_CRON=<CRON>")
+	}
+
+	key := os.Getenv("GH_TOKEN")
+	if key == "" {
+		log.Fatalf("must set GITHUB_TOKEN=<github token>")
+	}
+
+	orgName := os.Getenv("GH_ORG_NAME")
+	if orgName == "" {
+		log.Fatalf("must set ORG_NAME=<organization name>")
+	}
+
+	projectIdConfig := os.Getenv("PROJECT_ID")
+	projectId, err := strconv.Atoi(projectIdConfig)
+
+	if err != nil || projectId <= 0 {
+		log.Fatalf("must set PROJECT_ID=<project id>")
+	}
+
+	dataPullJob := &jobs.DataPullJob{}
+	dataPullJob.Init(jobCron, queries, int(projectId), key, orgName)
+
+	dataPullJob.Start()
+
+	return dataPullJob.Stop
+}
+
+func getAllowedOrigins() string {
+	allowedOrigin, ok := os.LookupEnv("ALLOWED_ORIGIN")
+	if !ok {
+		allowedOrigin = "http://localhost:5173"
+	}
+
+	return allowedOrigin
+}
+
+func startWebServer(queries *db.Queries) func(ctx context.Context) error {
+	handlers := &handlers.Handlers{Queries: queries, CORSOrigins: getAllowedOrigins()}
+
+	router := http.NewServeMux()
+
+	router.HandleFunc("GET /api/burndown", handlers.GetBurndown)
+	router.HandleFunc("GET /health", handlers.HealthCheck)
+
+	if handlers.CORSOrigins != "" {
+		router.HandleFunc("OPTIONS /api/", handlers.CORS)
+	}
+
+	// router.Handle("/", http.FileServer(http.Dir("./public/")))
+
+	logRouter := midlewares.NewLogger(router)
+
+	hostPort, ok := os.LookupEnv("WEB_HOST_PORT")
+	if !ok {
+		hostPort = ":8000"
+	}
+
+	certFile, useTls := os.LookupEnv("TLS_CERT_FILE")
+
+	certKeyFile, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
+	useTls = useTls && ok
+
+	log.Printf("Starting TLS server on port: %s; use tls: %t", hostPort, useTls)
+
+	srv := &http.Server{
+		Addr: hostPort,
+	}
+
+	srv.Handler = logRouter
+
+	go func() {
+		var err error = nil
+		if useTls {
+			err = srv.ListenAndServeTLS(certFile, certKeyFile)
+		} else {
+			err = srv.ListenAndServe()
+		}
+
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
 		}
 	}()
+	log.Print("Web Server Started")
+	return srv.Shutdown
+}
 
-	key := os.Getenv("GITHUB_TOKEN")
-	if key == "" {
-		err = fmt.Errorf("must set GITHUB_TOKEN=<github token>")
-		return
+func initDB(ctx context.Context) (*db.Queries, func()) {
+	dbConnection := os.Getenv("DB_CONNECTION")
+
+	if dbConnection == "" {
+		log.Fatal("must set DB_CONNECTION=<connection string>")
 	}
 
-	httpClient := http.Client{
-		Transport: &authedTransport{
-			key:     key,
-			wrapped: http.DefaultTransport,
-		},
-	}
-	graphqlClient := graphql.NewClient("https://api.github.com/graphql", &httpClient)
-
-	orgProject, err := getOrganizationProject(context.Background(), graphqlClient, "hitachisolutionsamerica", 12, 5, "")
+	conn, err := pgxpool.New(ctx, dbConnection)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
-	fmt.Println(orgProject.Organization.ProjectV2.Title)
+	queries := db.New(conn)
 
-	parsedProject := parseProjectInformation(orgProject)
-	total, stats := createStatsForProject(parsedProject, &parsedProject.Issues[0].Iteration)
-	renderChart(total, stats)
-
-}
-
-func parseProjectInformation(orgProject *getOrganizationProjectResponse) *Project {
-	//parse project information
-	project := &Project{}
-	project.Title = orgProject.Organization.ProjectV2.Title
-
-	for _, item := range orgProject.Organization.ProjectV2.Items.Nodes {
-		content := item.Content.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
-		issue := Issue{}
-		issue.Title = content.Title
-		issue.CreatedAt = content.CreatedAt
-		issue.ClosedAt = content.ClosedAt
-		issue.Status = item.Status.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue).Name
-
-		if item.Effort != nil {
-			issue.Effort = item.Effort.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
-		}
-
-		if item.Iteration != nil {
-			iteration := item.Iteration.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
-
-			startDate, _ := time.Parse("2006-01-02", iteration.StartDate)
-			issue.Iteration = Iteration{
-				Title:     iteration.Title,
-				StartDate: startDate,
-				EndDate:   startDate.Add(time.Duration(iteration.Duration) * 24 * time.Hour),
-			}
-		}
-
-		// extract labels from isues
-		for _, label := range content.Labels.Nodes {
-			issue.Labels = append(issue.Labels, label.Name)
-		}
-
-		project.Issues = append(project.Issues, issue)
-	}
-
-	return project
-}
-
-func createStatsForProject(project *Project, iteration *Iteration) (float64, map[time.Time]float64) {
-	closedItemsStats := make(map[time.Time]float64)
-	result := make(map[time.Time]float64)
-
-	remainingEffort := 0.0
-
-	for _, issue := range project.Issues {
-		if issue.Iteration.Title == iteration.Title {
-			remainingEffort += issue.Effort
-
-			if issue.Status == "Done" {
-				closedItemsStats[getDatePart(issue.ClosedAt)] += issue.Effort
-			}
-		}
-	}
-
-	totalEffort := remainingEffort
-
-	for _, day := range daysBetween(iteration.StartDate, iteration.EndDate) {
-		remainingEffort -= closedItemsStats[day]
-		result[day] = remainingEffort
-	}
-
-	return totalEffort, result
-}
-
-func daysBetween(time1, time2 time.Time) []time.Time {
-	// return an array with each day in between time1 and time2
-	var days []time.Time
-	for d := time1; d.Before(time2) || d == time2; d = d.AddDate(0, 0, 1) {
-		days = append(days, d)
-	}
-
-	return days
-}
-
-// gets date only part of the time
-func getDatePart(value time.Time) time.Time {
-	return value.Truncate(24 * time.Hour)
-}
-
-func renderChart(total float64, data map[time.Time]float64) {
-	keys := make([]time.Time, 0, len(data))
-	closed := make([]float64, 0, len(data))
-	ideal := make([]float64, 0, len(data))
-	idealPerDay := total / float64(len(data))
-
-	for t := range data {
-		keys = append(keys, t)
-	}
-
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i].Before(keys[j])
-	})
-
-	for idx, key := range keys {
-		closed = append(closed, data[key])
-		ideal = append(ideal, total-(idealPerDay*float64(idx+1)))
-	}
-
-	graph := chart.Chart{
-		Series: []chart.Series{
-			chart.TimeSeries{
-				Style: chart.Style{
-					StrokeColor: chart.GetDefaultColor(0).WithAlpha(64),
-					FillColor:   chart.GetDefaultColor(0).WithAlpha(64),
-				},
-				XValues: keys,
-				YValues: closed,
-			},
-			chart.TimeSeries{
-				XValues: keys,
-				YValues: ideal,
-			},
-			chart.TimeSeries{
-				XValues: []time.Time{time.Now(), time.Now(), time.Now(), time.Now()},
-				YValues: []float64{total, total - 1, total - 2, total - 3},
-			},
-		},
-	}
-
-	f, _ := os.Create("output.png")
-	defer f.Close()
-	graph.Render(chart.PNG, f)
+	return queries, conn.Close
 }

@@ -1,6 +1,7 @@
 query getOrganizationProject($organization_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
   organization(login: $organization_name) {
     projectV2(number: $project_number) {
+      id
       title
       field(name: "Status") {
         ... on ProjectV2SingleSelectField {
@@ -28,6 +29,7 @@ query getOrganizationProject($organization_name: String!, $project_number: Int!,
           }
           iteration: fieldValueByName(name: "Iteration") {
             ... on ProjectV2ItemFieldIterationValue {
+              id
               title
               startDate
               duration

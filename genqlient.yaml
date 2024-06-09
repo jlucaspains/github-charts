@@ -1,7 +1,7 @@
-schema: github_schema.graphql
+schema: jobs/github_schema.graphql
 operations:
-- projects.graphql
-generated: generated.go
+- jobs/projects.graphql
+generated: jobs/graphql.go
 
 # We bind github's DateTime scalar type to Go's time.Time (which conveniently
 # already defines MarshalJSON and UnmarshalJSON).  This means genqlient will
