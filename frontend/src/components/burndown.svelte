@@ -31,7 +31,7 @@
   );
 
   onMount(async () => {
-    const response = await fetch(`http://localhost:8000/api/burndown`);
+    const response = await fetch(`http://localhost:8000/api/iteration/1/burndown`);
     const data = await response.json();
     const labels = [];
     const actual = [];

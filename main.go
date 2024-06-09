@@ -94,7 +94,7 @@ func startWebServer(queries *db.Queries) func(ctx context.Context) error {
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /api/burndown", handlers.GetBurndown)
+	router.HandleFunc("GET /api/iteration/{id}/burndown", handlers.GetBurndown)
 	router.HandleFunc("GET /health", handlers.HealthCheck)
 
 	if handlers.CORSOrigins != "" {

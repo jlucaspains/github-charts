@@ -40,7 +40,7 @@ with starting_effort as (
  select sum(effort) as effort
  from work_item_history
  where change_date = (select min(change_date) from work_item_history where iteration_id = 1)
-   and iteration_id = 1)
+   and iteration_id = $1)
 
 select iteration_day
      , cast(sum(case when status <> 'Done' then work_item_history.effort else 0 end) as decimal) as remaining
@@ -60,6 +60,6 @@ select iteration_day
                       where EXTRACT(ISODOW FROM dd) not IN (6, 7)) total_days on true
         join lateral (select effort from starting_effort) seffort on true
        left join work_item_history on work_item_history.change_date = dates.iteration_day
- where iteration.id = 1
+ where iteration.id = $1
  group by iteration_day, total_days.total, seffort.effort
 order by iteration_day;
