@@ -31,7 +31,9 @@
   );
 
   onMount(async () => {
-    const response = await fetch(`http://localhost:8000/api/iteration/1/burndown`);
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_PATH}/api/iteration/1/burndown`,
+    );
     const data = await response.json();
     const labels = [];
     const actual = [];

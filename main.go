@@ -101,7 +101,7 @@ func startWebServer(queries *db.Queries) func(ctx context.Context) error {
 		router.HandleFunc("OPTIONS /api/", handlers.CORS)
 	}
 
-	// router.Handle("/", http.FileServer(http.Dir("./public/")))
+	router.Handle("/", http.FileServer(http.Dir("./public/")))
 
 	logRouter := midlewares.NewLogger(router)
 
