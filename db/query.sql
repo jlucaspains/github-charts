@@ -38,6 +38,9 @@ RETURNING *;
 -- name: GetIterations :many
 SELECT * FROM iteration;
 
+-- name: GetProjects :many
+SELECT * FROM project;
+
 -- name: GetIterationBurndown :many
 with starting_effort as (
  select sum(effort) as effort
@@ -66,3 +69,18 @@ select iteration_day
  where iteration.id = $1
  group by iteration_day, total_days.total, seffort.effort
 order by iteration_day;
+
+
+-- name: GetProjectBurnup :many
+select project_day
+     , sum(case when status <> 'Done' then work_item_history.effort else 0 end)::decimal as remaining
+     , sum(case when status = 'Done' then work_item_history.effort else 0 end)::decimal as done
+  from (SELECT date_trunc('day', dd):: date as project_day
+                       FROM generate_series
+                               ( $2::timestamp 
+                               , now()::timestamp
+                               , '1 day'::interval) dd) dates
+       left join work_item_history on dates.project_day = work_item_history.change_date
+ where (work_item_history.project_id = $1 or project_id is null)
+ group by project_day
+order by project_day;

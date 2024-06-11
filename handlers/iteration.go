@@ -14,9 +14,8 @@ func (h Handlers) GetIterations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting iteration data: %s", err)
 
-		h.JSON(w, http.StatusInternalServerError, &models.ErrorResult{
-			Errors: []string{"Could not get iteration data. Please try again later."},
-		})
+		status, body := h.ErrorToHttpResult(err)
+		h.JSON(w, status, body)
 	} else {
 		result := []*models.Iteration{}
 		for _, item := range iterations {
@@ -39,9 +38,8 @@ func (h Handlers) GetBurndown(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error getting burndown data: %s", err)
-		h.JSON(w, http.StatusInternalServerError, &models.ErrorResult{
-			Errors: []string{"Could not get burndown data. Please try again later."},
-		})
+		status, body := h.ErrorToHttpResult(err)
+		h.JSON(w, status, body)
 	} else {
 		h.JSON(w, http.StatusOK, burndown)
 	}

@@ -97,6 +97,76 @@ func (q *Queries) GetIterations(ctx context.Context) ([]Iteration, error) {
 	return items, nil
 }
 
+const getProjectBurnup = `-- name: GetProjectBurnup :many
+select project_day
+     , sum(case when status <> 'Done' then work_item_history.effort else 0 end)::decimal as remaining
+     , sum(case when status = 'Done' then work_item_history.effort else 0 end)::decimal as done
+  from (SELECT date_trunc('day', dd):: date as project_day
+                       FROM generate_series
+                               ( $2::timestamp 
+                               , now()::timestamp
+                               , '1 day'::interval) dd) dates
+       left join work_item_history on dates.project_day = work_item_history.change_date
+ where (work_item_history.project_id = $1 or project_id is null)
+ group by project_day
+order by project_day
+`
+
+type GetProjectBurnupParams struct {
+	ProjectID int64
+	Column2   pgtype.Timestamp
+}
+
+type GetProjectBurnupRow struct {
+	ProjectDay pgtype.Date
+	Remaining  pgtype.Numeric
+	Done       pgtype.Numeric
+}
+
+func (q *Queries) GetProjectBurnup(ctx context.Context, arg GetProjectBurnupParams) ([]GetProjectBurnupRow, error) {
+	rows, err := q.db.Query(ctx, getProjectBurnup, arg.ProjectID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProjectBurnupRow
+	for rows.Next() {
+		var i GetProjectBurnupRow
+		if err := rows.Scan(&i.ProjectDay, &i.Remaining, &i.Done); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProjects = `-- name: GetProjects :many
+SELECT id, gh_id, name FROM project
+`
+
+func (q *Queries) GetProjects(ctx context.Context) ([]Project, error) {
+	rows, err := q.db.Query(ctx, getProjects)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Project
+	for rows.Next() {
+		var i Project
+		if err := rows.Scan(&i.ID, &i.GhID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWorkItemsForIteration = `-- name: GetWorkItemsForIteration :many
 SELECT work_item_history.id, change_date, work_item_history.gh_id, project_id, work_item_history.name, status, priority, remaining_hours, effort, iteration_id, iteration.id, iteration.gh_id, iteration.name, start_date, end_date FROM work_item_history
 join iteration on work_item.iteration_id = iteration.id

@@ -23,7 +23,6 @@ func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) 
 	}
 
 	w.WriteHeader(statusCode)
-	// convert data to json
 	result, _ := json.Marshal(data)
 	w.Write(result)
 }

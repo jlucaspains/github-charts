@@ -19,7 +19,7 @@ CREATE TABLE work_item_history (
   change_date       date            NOT NULL,
   gh_id             varchar(255)    NOT NULL,
   project_id        BIGINT          NOT NULL REFERENCES project (id),
-  name              varchar(255)   NOT NULL,
+  name              varchar(255)    NOT NULL,
   status            varchar(255),
   priority          integer NULL,
   remaining_hours   integer NULL,
