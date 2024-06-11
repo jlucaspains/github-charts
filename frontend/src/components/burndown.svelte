@@ -18,6 +18,26 @@
    */
   let burndown;
 
+  /**
+   * @type {string}
+   */
+  let error;
+
+  /**
+   * @type {string}
+   */
+  let selectedIteration = "1";
+
+  /**
+   * @type {{id: string, text: string, isCurrent: boolean}[]}
+   */
+  let iterations = [];
+
+  /**
+   * @type {ChartJS}
+   */
+  let chart;
+
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -30,59 +50,128 @@
     Legend,
   );
 
+  const basePath = import.meta.env.VITE_API_BASE_PATH || "/api";
+
   onMount(async () => {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_PATH}/api/iteration/1/burndown`,
-    );
-    const data = await response.json();
-    const labels = [];
-    const actual = [];
-    const ideal = [];
-    const today = new Date().toISOString().substring(0, 10);
+    await loadIterations();
+    await plotBurndownForIteration(selectedIteration);
+  });
 
-    for (const item of data) {
-      labels.push(item.IterationDay);
-      actual.push(today >= item.IterationDay ? item.Remaining : null);
-      ideal.push(item.Ideal);
-    }
+  function iterationChanged() {
+    plotBurndownForIteration(selectedIteration);
+  }
 
-    const ctx = burndown.getContext("2d");
-    const config = {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          {
-            fill: true,
-            label: "Actual",
-            data: actual,
-            borderColor: "rgb(53, 162, 235)",
-            backgroundColor: "rgba(53, 162, 235, 0.3)",
-          },
-          {
-            label: "Ideal",
-            data: ideal,
-            borderColor: "gray",
-            backgroundColor: "gray",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "top",
-          },
-          title: {
-            display: true,
-            text: "Burndown",
+  /**
+   * @param {string} iteration
+   */
+  async function plotBurndownForIteration(iteration) {
+    try {
+      if (chart) {
+        chart.destroy();
+      }
+
+      const response = await fetch(
+        `${basePath}/iterations/${iteration}/burndown`,
+      );
+
+      if (!response.ok) {
+        const errorJson = await response.json();
+        error = errorJson.errors.join(", ");
+        return;
+      }
+
+      const data = (await response.json()) || [];
+      const labels = [];
+      const actual = [];
+      const ideal = [];
+      const today = new Date().toISOString().substring(0, 10);
+
+      for (const item of data) {
+        labels.push(item.IterationDay);
+        actual.push(today >= item.IterationDay ? item.Remaining : null);
+        ideal.push(item.Ideal);
+      }
+
+      const ctx = burndown.getContext("2d");
+      const config = {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              fill: true,
+              label: "Actual",
+              data: actual,
+              borderColor: "rgb(53, 162, 235)",
+              backgroundColor: "rgba(53, 162, 235, 0.3)",
+            },
+            {
+              label: "Ideal",
+              data: ideal,
+              borderColor: "gray",
+              backgroundColor: "gray",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top",
+            },
+            title: {
+              display: true,
+              text: "Burndown",
+            },
           },
         },
-      },
-    };
-    // @ts-ignore
-    new ChartJS(ctx, config);
-  });
+      };
+      // @ts-ignore
+      chart = new ChartJS(ctx, config);
+    } catch (err) {
+      error = err.message;
+    }
+  }
+
+  async function loadIterations() {
+    const response = await fetch(`${basePath}/iterations`);
+
+    if (!response.ok) {
+      const errorJson = await response.json();
+      error = errorJson.errors.join(", ");
+      return;
+    }
+
+    const data = (await response.json()) || [];
+    for (const item of data) {
+      iterations = [...iterations, { id: item.id, text: item.title, isCurrent: isCurrentIteration(item) }];
+    }
+
+    console.log(iterations);
+
+    selectedIteration = iterations.find((i) => i.isCurrent)?.id;
+  }
+
+  /**
+   * @param {{ title: string; startDate: string; endDate: string; }} item
+   */
+  function isCurrentIteration(item) {
+    const today = new Date().toISOString().substring(0, 10);
+    return (
+      item.startDate <= today &&
+      item.endDate >= today
+    );
+  }
 </script>
 
+<select bind:value={selectedIteration} on:change={iterationChanged}>
+  {#each iterations as iteration}
+    <option value={iteration.id}>Iteration {iteration.text}</option>
+  {/each}
+</select>
+
 <canvas bind:this={burndown} width={600} height={400} />
+
+{#if error}
+  <p>{error}</p>
+{/if}

@@ -67,6 +67,36 @@ func (q *Queries) GetIterationBurndown(ctx context.Context, id int64) ([]GetIter
 	return items, nil
 }
 
+const getIterations = `-- name: GetIterations :many
+SELECT id, gh_id, name, start_date, end_date FROM iteration
+`
+
+func (q *Queries) GetIterations(ctx context.Context) ([]Iteration, error) {
+	rows, err := q.db.Query(ctx, getIterations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Iteration
+	for rows.Next() {
+		var i Iteration
+		if err := rows.Scan(
+			&i.ID,
+			&i.GhID,
+			&i.Name,
+			&i.StartDate,
+			&i.EndDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWorkItemsForIteration = `-- name: GetWorkItemsForIteration :many
 SELECT work_item_history.id, change_date, work_item_history.gh_id, project_id, work_item_history.name, status, priority, remaining_hours, effort, iteration_id, iteration.id, iteration.gh_id, iteration.name, start_date, end_date FROM work_item_history
 join iteration on work_item.iteration_id = iteration.id

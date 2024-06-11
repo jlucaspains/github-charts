@@ -8,7 +8,11 @@ services:
     environment:
       ENV: "local"
       WEB_PORT: ":8000"
-      DB_CONNECTION_STRING: "host=db user=postgres password=${POSTGRES_PASSWORD} dbname=goapitemplate port=5432"
+      DB_CONNECTION: "${DB_CONNECTION}"
+      GH_ORG_NAME: "hitachisolutionsamerica"
+      GH_TOKEN: "${GH_TOKEN}"
+      PROJECT_ID: "${PROJECT_ID}"
+      DATA_PULL_JOB_CRON: "*/2 * * * *"
     ports:
       - "8000:8000"
     depends_on:

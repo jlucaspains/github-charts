@@ -35,6 +35,9 @@ DO UPDATE SET
   end_date = EXCLUDED.end_date
 RETURNING *;
 
+-- name: GetIterations :many
+SELECT * FROM iteration;
+
 -- name: GetIterationBurndown :many
 with starting_effort as (
  select sum(effort) as effort

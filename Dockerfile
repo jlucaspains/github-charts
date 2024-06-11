@@ -26,7 +26,7 @@ FROM node:22.2.0-alpine3.20 AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts
-RUN echo "PUBLIC_API_BASE_PATH=/api" > .env
+RUN echo "VITE_API_BASE_PATH=/api" > .env
 RUN npm run build
 
 FROM scratch as runner
