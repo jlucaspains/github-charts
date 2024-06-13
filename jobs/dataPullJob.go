@@ -105,34 +105,51 @@ func (c *DataPullJob) execute() {
 
 func saveProjectInformation(project *models.Project, queries *db.Queries) error {
 	ctx := context.Background()
-	dbProject, _ := queries.UpsertProject(ctx, db.UpsertProjectParams{
+	dbProject, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
 		GhID: project.Id,
 		Name: project.Title,
 	})
 
-	for _, issue := range project.Issues {
+	if err != nil {
+		return err
+	}
+
+	iterationsMap := make(map[string]int64)
+	for _, iteration := range project.Iterations {
 		dbIteration, err := queries.UpsertIteration(ctx, db.UpsertIterationParams{
-			GhID:      project.Id,
-			Name:      project.Title,
-			StartDate: pgtype.Date{Time: issue.Iteration.StartDate, Valid: true},
-			EndDate:   pgtype.Date{Time: issue.Iteration.EndDate, Valid: true},
+			GhID:      iteration.Id,
+			Name:      iteration.Title,
+			StartDate: pgtype.Date{Time: iteration.StartDate, Valid: true},
+			EndDate:   pgtype.Date{Time: iteration.EndDate, Valid: true},
 		})
+
+		iterationsMap[iteration.Id] = dbIteration.ID
 
 		if err != nil {
 			return err
 		}
+	}
 
+	for _, status := range project.Statuses {
+		_, err := queries.UpsertWorkItemStatus(ctx, status)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, issue := range project.Issues {
 		now := time.Now().Truncate(24 * time.Hour)
 		today := now.UTC()
 
-		_, err = queries.UpsertWorkItem(ctx, db.UpsertWorkItemParams{
+		_, err := queries.UpsertWorkItem(ctx, db.UpsertWorkItemParams{
 			GhID:        issue.Id,
 			ChangeDate:  pgtype.Date{Time: today, Valid: true},
 			Name:        issue.Title,
 			Effort:      pgtype.Int4{Int32: int32(issue.Effort), Valid: true},
 			Status:      pgtype.Text{String: issue.Status, Valid: true},
 			ProjectID:   dbProject.ID,
-			IterationID: pgtype.Int8{Int64: dbIteration.ID, Valid: true},
+			IterationID: pgtype.Int8{Int64: iterationsMap[issue.IterationId], Valid: true},
 		})
 
 		if err != nil {
@@ -171,8 +188,36 @@ func getOrgProject(graphqlClient graphql.Client, orgName string, projectId int) 
 
 func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models.Project {
 	project := &models.Project{
-		Id:    orgProject.Organization.ProjectV2.Id,
-		Title: orgProject.Organization.ProjectV2.Title,
+		Id:         orgProject.Organization.ProjectV2.Id,
+		Title:      orgProject.Organization.ProjectV2.Title,
+		Iterations: []models.Iteration{},
+		Statuses:   []string{},
+	}
+
+	status := orgProject.Organization.ProjectV2.Status.(*getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField)
+
+	for _, option := range status.Options {
+		project.Statuses = append(project.Statuses, option.Name)
+	}
+
+	iteration := orgProject.Organization.ProjectV2.Iteration.(*getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField)
+	for _, completedIteration := range iteration.Configuration.CompletedIterations {
+		startDate, _ := time.Parse("2006-01-02", completedIteration.StartDate)
+		project.Iterations = append(project.Iterations, models.Iteration{
+			Id:        completedIteration.Id,
+			Title:     completedIteration.Title,
+			StartDate: startDate,
+			EndDate:   startDate.Add(time.Duration(completedIteration.Duration) * 24 * time.Hour),
+		})
+	}
+	for _, futureIteration := range iteration.Configuration.Iterations {
+		startDate, _ := time.Parse("2006-01-02", futureIteration.StartDate)
+		project.Iterations = append(project.Iterations, models.Iteration{
+			Id:        futureIteration.Id,
+			Title:     futureIteration.Title,
+			StartDate: startDate,
+			EndDate:   startDate.Add(time.Duration(futureIteration.Duration) * 24 * time.Hour),
+		})
 	}
 
 	for _, item := range orgProject.Organization.ProjectV2.Items.Nodes {
@@ -188,16 +233,14 @@ func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models
 			issue.Effort = item.Effort.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
 		}
 
+		if item.Remaining != nil {
+			issue.RemainingHours = item.Remaining.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue).Number
+		}
+
 		if item.Iteration != nil {
 			iteration := item.Iteration.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
 
-			startDate, _ := time.Parse("2006-01-02", iteration.StartDate)
-			issue.Iteration = models.Iteration{
-				Id:        iteration.Id,
-				Title:     iteration.Title,
-				StartDate: startDate,
-				EndDate:   startDate.Add(time.Duration(iteration.Duration) * 24 * time.Hour),
-			}
+			issue.IterationId = iteration.IterationId
 		}
 
 		// extract labels from isues
@@ -209,45 +252,4 @@ func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models
 	}
 
 	return project
-}
-
-func createStatsForProject(project *models.Project, iteration *models.Iteration) (float64, map[time.Time]float64) {
-	closedItemsStats := make(map[time.Time]float64)
-	result := make(map[time.Time]float64)
-
-	remainingEffort := 0.0
-
-	for _, issue := range project.Issues {
-		if issue.Iteration.Title == iteration.Title {
-			remainingEffort += issue.Effort
-
-			if issue.Status == "Done" {
-				closedItemsStats[getDatePart(issue.ClosedAt)] += issue.Effort
-			}
-		}
-	}
-
-	totalEffort := remainingEffort
-
-	for _, day := range daysBetween(iteration.StartDate, iteration.EndDate) {
-		remainingEffort -= closedItemsStats[day]
-		result[day] = remainingEffort
-	}
-
-	return totalEffort, result
-}
-
-func daysBetween(time1, time2 time.Time) []time.Time {
-	// return an array with each day in between time1 and time2
-	var days []time.Time
-	for d := time1; d.Before(time2) || d == time2; d = d.AddDate(0, 0, 1) {
-		days = append(days, d)
-	}
-
-	return days
-}
-
-// gets date only part of the time
-func getDatePart(value time.Time) time.Time {
-	return value.Truncate(24 * time.Hour)
 }

@@ -3,12 +3,32 @@ query getOrganizationProject($organization_name: String!, $project_number: Int!,
     projectV2(number: $project_number) {
       id
       title
-      field(name: "Status") {
+      status: field(name: "Status") {
         ... on ProjectV2SingleSelectField {
+          name
           options {
             name
           }
         }
+      }
+      iteration: field(name: "Iteration") {
+        ... on ProjectV2IterationField {
+            name
+            configuration {
+              iterations {
+                id
+                title
+                startDate
+                duration
+              }
+              completedIterations {
+                id
+                title
+                startDate
+                duration
+              }
+            }
+          }
       }
       items(first: 100, after: $cursor) {
         pageInfo {
@@ -27,53 +47,14 @@ query getOrganizationProject($organization_name: String!, $project_number: Int!,
               number
             }
           }
+          remaining: fieldValueByName(name: "RemainingHours") {
+            ... on ProjectV2ItemFieldNumberValue {
+              number
+            }
+          }
           iteration: fieldValueByName(name: "Iteration") {
             ... on ProjectV2ItemFieldIterationValue {
-              id
-              title
-              startDate
-              duration
-            }
-          }
-          content {
-            ...on Issue {
-              title
-              createdAt
-              closedAt
-              labels(first: $labels_per_issue_count) {
-                nodes {
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-query getRepositoryProject($repo_owner: String!, $repo_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
-  repository(owner: $repo_owner, name: $repo_name) {
-    projectV2(number: $project_number) {
-      title
-      field(name: "Status") {
-        ... on ProjectV2SingleSelectField {
-          options {
-            name
-          }
-        }
-      }
-      items(first: 100, after: $cursor) {
-        pageInfo {
-            hasNextPage
-            endCursor
-        }
-        nodes {
-          id
-          fieldValueByName(name: "Status") {
-            ... on ProjectV2ItemFieldSingleSelectValue {
-              name
+              iterationId
             }
           }
           content {

@@ -35,6 +35,14 @@ DO UPDATE SET
   end_date = EXCLUDED.end_date
 RETURNING *;
 
+-- name: UpsertWorkItemStatus :one
+INSERT INTO work_item_status (name)
+VALUES ($1)
+ON CONFLICT(name) 
+DO UPDATE SET
+  "name" = EXCLUDED.name
+RETURNING *;
+
 -- name: GetIterations :many
 SELECT * FROM iteration;
 
@@ -72,15 +80,16 @@ order by iteration_day;
 
 
 -- name: GetProjectBurnup :many
-select project_day
-     , sum(case when status <> 'Done' then work_item_history.effort else 0 end)::decimal as remaining
-     , sum(case when status = 'Done' then work_item_history.effort else 0 end)::decimal as done
-  from (SELECT date_trunc('day', dd):: date as project_day
+select statuses.name as status
+     , project_day
+     , sum(work_item_history.effort)::decimal as qty
+  from work_item_status statuses
+       join lateral (SELECT date_trunc('day', dd):: date as project_day
                        FROM generate_series
                                ( $2::timestamp 
                                , now()::timestamp
-                               , '1 day'::interval) dd) dates
-       left join work_item_history on dates.project_day = work_item_history.change_date
+                               , '1 day'::interval) dd) dates on true
+        left join work_item_history on work_item_history.change_date = dates.project_day and work_item_history.status = statuses.name
  where (work_item_history.project_id = $1 or project_id is null)
- group by project_day
-order by project_day;
+ group by statuses.name, dates.project_day
+order by statuses.name, dates.project_day;

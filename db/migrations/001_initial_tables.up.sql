@@ -27,3 +27,9 @@ CREATE TABLE work_item_history (
   iteration_id      BIGINT  NULL REFERENCES iteration (id),
   UNIQUE(change_date, gh_id)
 );
+
+CREATE TABLE work_item_status (
+  id            BIGSERIAL PRIMARY KEY,
+  name          varchar(255)            NOT NULL,
+  UNIQUE(name)
+);

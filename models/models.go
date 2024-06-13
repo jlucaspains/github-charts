@@ -12,20 +12,23 @@ type Iteration struct {
 }
 
 type Issue struct {
-	Id        string    `json:"id"`
-	Title     string    `json:"title"`
-	CreatedAt time.Time `json:"createdAt"`
-	ClosedAt  time.Time `json:"closedAt"`
-	Status    string    `json:"status"`
-	Effort    float64   `json:"effort"`
-	Labels    []string  `json:"labels"`
-	Iteration Iteration `json:"iteration"`
+	Id             string    `json:"id"`
+	Title          string    `json:"title"`
+	CreatedAt      time.Time `json:"createdAt"`
+	ClosedAt       time.Time `json:"closedAt"`
+	Status         string    `json:"status"`
+	Effort         float64   `json:"effort"`
+	RemainingHours float64   `json:"remainingHours"`
+	Labels         []string  `json:"labels"`
+	IterationId    string    `json:"iterationId"`
 }
 
 type Project struct {
-	Id     string  `json:"id"`
-	Title  string  `json:"title"`
-	Issues []Issue `json:"issues"`
+	Id         string      `json:"id"`
+	Title      string      `json:"title"`
+	Issues     []Issue     `json:"issues"`
+	Statuses   []string    `json:"statuses"`
+	Iterations []Iteration `json:"iterations"`
 }
 
 type ErrorResult struct {

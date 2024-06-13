@@ -73,39 +73,55 @@
         return;
       }
 
+      /**
+       * @type {Array<{ProjectDay: string, Status: string, Qty: number}>}
+       */
       const data = (await response.json()) || [];
+      /**
+       * @type {Map<string, Map<string, number>>}
+       */
+      const mappedData = new Map();
       const labels = [];
-      const inProgress = [];
-      const complete = [];
+      const dataSets = [];
 
+      // map the items in data into a collection for labels with unique statuses
       for (const item of data) {
-        labels.push(item.ProjectDay);
-        inProgress.push(item.Remaining);
-        complete.push(item.Done);
+        if (!mappedData.has(item.Status)) {
+          mappedData.set(item.Status, new Map());
+        }
+
+        mappedData.get(item.Status).set(item.ProjectDay, item.Qty);
       }
-      console.log(labels, inProgress, complete)
+
+      var dynamicColors = function () {
+        var r = Math.floor(Math.random() * 255);
+        var g = Math.floor(Math.random() * 255);
+        var b = Math.floor(Math.random() * 255);
+        return "rgb(" + r + "," + g + "," + b + ")";
+      };
+
+      for (const item of mappedData) {
+        const color = dynamicColors();
+        const dataSet = {
+          fill: true,
+          label: item[0],
+          data: [...item[1].values()],
+          backgroundColor: color,
+          borderColor: color,
+        };
+        dataSets.push(dataSet);
+
+        if (labels.length === 0) {
+          labels.push(...item[1].keys());
+        }
+      }
 
       const ctx = burndown.getContext("2d");
       const config = {
         type: "line",
         data: {
           labels,
-          datasets: [
-            {
-              fill: true,
-              label: "Complete",
-              data: complete,
-              borderColor: "rgb(53, 235, 162)",
-              backgroundColor: "rgba(53, 235, 162, 0.3)",
-            },
-            {
-              fill: true,
-              label: "In Progress",
-              data: inProgress,
-              borderColor: "rgb(53, 162, 235)",
-              backgroundColor: "rgba(53, 162, 235, 0.3)",
-            },
-          ],
+          datasets: dataSets,
         },
         options: {
           responsive: true,

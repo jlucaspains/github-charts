@@ -98,18 +98,19 @@ func (q *Queries) GetIterations(ctx context.Context) ([]Iteration, error) {
 }
 
 const getProjectBurnup = `-- name: GetProjectBurnup :many
-select project_day
-     , sum(case when status <> 'Done' then work_item_history.effort else 0 end)::decimal as remaining
-     , sum(case when status = 'Done' then work_item_history.effort else 0 end)::decimal as done
-  from (SELECT date_trunc('day', dd):: date as project_day
+select statuses.name as status
+     , project_day
+     , sum(work_item_history.effort)::decimal as qty
+  from work_item_status statuses
+       join lateral (SELECT date_trunc('day', dd):: date as project_day
                        FROM generate_series
                                ( $2::timestamp 
                                , now()::timestamp
-                               , '1 day'::interval) dd) dates
-       left join work_item_history on dates.project_day = work_item_history.change_date
+                               , '1 day'::interval) dd) dates on true
+        left join work_item_history on work_item_history.change_date = dates.project_day and work_item_history.status = statuses.name
  where (work_item_history.project_id = $1 or project_id is null)
- group by project_day
-order by project_day
+ group by statuses.name, dates.project_day
+order by statuses.name, dates.project_day
 `
 
 type GetProjectBurnupParams struct {
@@ -118,9 +119,9 @@ type GetProjectBurnupParams struct {
 }
 
 type GetProjectBurnupRow struct {
+	Status     string
 	ProjectDay pgtype.Date
-	Remaining  pgtype.Numeric
-	Done       pgtype.Numeric
+	Qty        pgtype.Numeric
 }
 
 func (q *Queries) GetProjectBurnup(ctx context.Context, arg GetProjectBurnupParams) ([]GetProjectBurnupRow, error) {
@@ -132,7 +133,7 @@ func (q *Queries) GetProjectBurnup(ctx context.Context, arg GetProjectBurnupPara
 	var items []GetProjectBurnupRow
 	for rows.Next() {
 		var i GetProjectBurnupRow
-		if err := rows.Scan(&i.ProjectDay, &i.Remaining, &i.Done); err != nil {
+		if err := rows.Scan(&i.Status, &i.ProjectDay, &i.Qty); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -336,5 +337,21 @@ func (q *Queries) UpsertWorkItem(ctx context.Context, arg UpsertWorkItemParams) 
 		&i.Effort,
 		&i.IterationID,
 	)
+	return i, err
+}
+
+const upsertWorkItemStatus = `-- name: UpsertWorkItemStatus :one
+INSERT INTO work_item_status (name)
+VALUES ($1)
+ON CONFLICT(name) 
+DO UPDATE SET
+  "name" = EXCLUDED.name
+RETURNING id, name
+`
+
+func (q *Queries) UpsertWorkItemStatus(ctx context.Context, name string) (WorkItemStatus, error) {
+	row := q.db.QueryRow(ctx, upsertWorkItemStatus, name)
+	var i WorkItemStatus
+	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }

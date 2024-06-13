@@ -34,3 +34,8 @@ type WorkItemHistory struct {
 	Effort         pgtype.Int4
 	IterationID    pgtype.Int8
 }
+
+type WorkItemStatus struct {
+	ID   int64
+	Name string
+}

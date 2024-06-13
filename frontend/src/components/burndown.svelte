@@ -26,7 +26,7 @@
   /**
    * @type {string}
    */
-  let selectedIteration = "1";
+  let selectedIteration = null;
 
   /**
    * @type {{id: string, text: string, isCurrent: boolean}[]}
@@ -108,8 +108,8 @@
             {
               label: "Ideal",
               data: ideal,
-              borderColor: "gray",
-              backgroundColor: "gray",
+              borderColor: "rgb(150, 150, 150)",
+              backgroundColor: "rgb(150, 150, 150)",
             },
           ],
         },
@@ -147,9 +147,7 @@
       iterations = [...iterations, { id: item.id, text: item.title, isCurrent: isCurrentIteration(item) }];
     }
 
-    console.log(iterations);
-
-    selectedIteration = iterations.find((i) => i.isCurrent)?.id;
+    selectedIteration = iterations.find((i) => i.isCurrent)?.id ?? null;
   }
 
   /**
@@ -165,8 +163,9 @@
 </script>
 
 <select bind:value={selectedIteration} on:change={iterationChanged}>
-  {#each iterations as iteration}
-    <option value={iteration.id}>Iteration {iteration.text}</option>
+    <option value={null}>Select Iteration...</option>
+    {#each iterations as iteration}
+    <option value={iteration.id}>{iteration.text}</option>
   {/each}
 </select>
 
