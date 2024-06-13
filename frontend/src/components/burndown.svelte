@@ -80,6 +80,9 @@
         return;
       }
 
+      /**
+       * @type {{ iterationDay: string; remaining: number; ideal: number; }[]}
+       */
       const data = (await response.json()) || [];
       const labels = [];
       const actual = [];
@@ -87,9 +90,10 @@
       const today = new Date().toISOString().substring(0, 10);
 
       for (const item of data) {
-        labels.push(item.IterationDay);
-        actual.push(today >= item.IterationDay ? item.Remaining : null);
-        ideal.push(item.Ideal);
+        var parsedDate = item.iterationDay.substring(0, 10);
+        labels.push(parsedDate);
+        actual.push(today >= parsedDate ? item.remaining : null);
+        ideal.push(item.ideal);
       }
 
       const ctx = burndown.getContext("2d");

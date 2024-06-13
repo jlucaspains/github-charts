@@ -74,7 +74,7 @@
       }
 
       /**
-       * @type {Array<{ProjectDay: string, Status: string, Qty: number}>}
+       * @type {Array<{projectDay: string, status: string, qty: number}>}
        */
       const data = (await response.json()) || [];
       /**
@@ -86,11 +86,11 @@
 
       // map the items in data into a collection for labels with unique statuses
       for (const item of data) {
-        if (!mappedData.has(item.Status)) {
-          mappedData.set(item.Status, new Map());
+        if (!mappedData.has(item.status)) {
+          mappedData.set(item.status, new Map());
         }
-
-        mappedData.get(item.Status).set(item.ProjectDay, item.Qty);
+        const projectDay = item.projectDay.substring(0, 10);
+        mappedData.get(item.status).set(projectDay, item.qty);
       }
 
       var dynamicColors = function () {

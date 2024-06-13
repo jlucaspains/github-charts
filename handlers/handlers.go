@@ -12,7 +12,7 @@ import (
 
 type Handlers struct {
 	CORSOrigins string
-	Queries     *db.Queries
+	Queries     db.Querier
 }
 
 func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) {
@@ -25,14 +25,6 @@ func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) 
 	w.WriteHeader(statusCode)
 	result, _ := json.Marshal(data)
 	w.Write(result)
-}
-
-func (h Handlers) getQueryParam(r *http.Request, key string) (string, error) {
-	if param := r.URL.Query()[key]; param != nil {
-		return param[0], nil
-	}
-
-	return "", fmt.Errorf("%s not found", key)
 }
 
 func (h Handlers) ErrorToHttpResult(err error) (int, *models.ErrorResult) {

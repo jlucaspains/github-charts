@@ -45,6 +45,16 @@ func (h Handlers) GetBurnup(w http.ResponseWriter, r *http.Request) {
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
 	} else {
-		h.JSON(w, http.StatusOK, burnup)
+		result := []*models.BurnupItem{}
+		for _, item := range burnup {
+			qty, _ := item.Qty.Float64Value()
+			result = append(result, &models.BurnupItem{
+				ProjectDay: item.ProjectDay.Time,
+				Qty:        qty.Float64,
+				Status:     item.Status,
+			})
+		}
+
+		h.JSON(w, http.StatusOK, result)
 	}
 }

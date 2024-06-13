@@ -41,6 +41,17 @@ func (h Handlers) GetBurndown(w http.ResponseWriter, r *http.Request) {
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
 	} else {
-		h.JSON(w, http.StatusOK, burndown)
+		result := []*models.BurndownItem{}
+		for _, item := range burndown {
+			remaining, _ := item.Remaining.Float64Value()
+			ideal, _ := item.Ideal.Float64Value()
+			result = append(result, &models.BurndownItem{
+				IterationDay: item.IterationDay.Time,
+				Remaining:    remaining.Float64,
+				Ideal:        ideal.Float64,
+			})
+		}
+
+		h.JSON(w, http.StatusOK, result)
 	}
 }

@@ -45,3 +45,15 @@ type HealthResultItem struct {
 	Healthy bool   `json:"healthy"`
 	Error   string `json:"error"`
 }
+
+type BurndownItem struct {
+	IterationDay time.Time `json:"iterationDay"`
+	Remaining    float64   `json:"remaining"`
+	Ideal        float64   `json:"ideal"`
+}
+
+type BurnupItem struct {
+	Status     string    `json:"status"`
+	ProjectDay time.Time `json:"projectDay"`
+	Qty        float64   `json:"qty"`
+}
