@@ -15,14 +15,15 @@ import (
 )
 
 type DataPullJob struct {
-	cron         string
-	ticker       *time.Ticker
-	gron         *gronx.Gronx
-	running      bool
-	queries      *db.Queries
-	ghToken      string
-	projectId    int
-	organization string
+	cron          string
+	ticker        *time.Ticker
+	gron          *gronx.Gronx
+	running       bool
+	queries       db.Querier
+	ghToken       string
+	projectId     int
+	organization  string
+	graphqlClient graphql.Client
 }
 
 type authedTransport struct {
@@ -35,7 +36,7 @@ func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.wrapped.RoundTrip(req)
 }
 
-func (c *DataPullJob) Init(schedule string, queries *db.Queries, projectId int, ghToken string, organization string) error {
+func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, ghToken string, organization string) error {
 	c.gron = gronx.New()
 
 	if schedule == "" || !c.gron.IsValid(schedule) {
@@ -49,6 +50,14 @@ func (c *DataPullJob) Init(schedule string, queries *db.Queries, projectId int, 
 	c.ghToken = ghToken
 	c.organization = organization
 	c.queries = queries
+
+	httpClient := http.Client{
+		Transport: &authedTransport{
+			key:     c.ghToken,
+			wrapped: http.DefaultTransport,
+		},
+	}
+	c.graphqlClient = graphql.NewClient("https://api.github.com/graphql", &httpClient)
 
 	return nil
 }
@@ -85,15 +94,7 @@ func (c *DataPullJob) tryExecute() {
 func (c *DataPullJob) execute() {
 	log.Printf("execute job")
 
-	httpClient := http.Client{
-		Transport: &authedTransport{
-			key:     c.ghToken,
-			wrapped: http.DefaultTransport,
-		},
-	}
-	graphqlClient := graphql.NewClient("https://api.github.com/graphql", &httpClient)
-
-	orgProject, err := getOrgProject(graphqlClient, c.organization, c.projectId)
+	orgProject, err := getOrgProject(c.graphqlClient, c.organization, c.projectId)
 
 	if err != nil {
 		return
@@ -103,7 +104,7 @@ func (c *DataPullJob) execute() {
 	saveProjectInformation(project, c.queries)
 }
 
-func saveProjectInformation(project *models.Project, queries *db.Queries) error {
+func saveProjectInformation(project *models.Project, queries db.Querier) error {
 	ctx := context.Background()
 	dbProject, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
 		GhID: project.Id,
