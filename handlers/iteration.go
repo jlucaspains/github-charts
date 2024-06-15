@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -12,7 +12,7 @@ func (h Handlers) GetIterations(w http.ResponseWriter, r *http.Request) {
 	iterations, err := h.Queries.GetIterations(r.Context())
 
 	if err != nil {
-		log.Printf("Error getting iteration data: %s", err)
+		slog.Error("Error getting iteration data: %s", err)
 
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
@@ -37,7 +37,7 @@ func (h Handlers) GetBurndown(w http.ResponseWriter, r *http.Request) {
 	burndown, err := h.Queries.GetIterationBurndown(r.Context(), idInt64)
 
 	if err != nil {
-		log.Printf("Error getting burndown data: %s", err)
+		slog.Error("Error getting burndown data: %s", err)
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
 	} else {

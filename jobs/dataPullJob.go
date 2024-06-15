@@ -3,7 +3,7 @@ package jobs
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -40,7 +40,7 @@ func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, g
 	c.gron = gronx.New()
 
 	if schedule == "" || !c.gron.IsValid(schedule) {
-		log.Printf("A valid cron schedule is required in the format e.g.: * * * * *")
+		slog.Error("A valid cron schedule is required in the format e.g.: * * * * *", "cron", schedule)
 		return fmt.Errorf("a valid cron schedule is required")
 	}
 
@@ -64,7 +64,7 @@ func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, g
 
 func (c *DataPullJob) Start() {
 	c.running = true
-	log.Printf("Started DataPullJob job with cron %s", c.cron)
+	slog.Info("Started DataPullJob job", "cron", c.cron)
 
 	go func() {
 		for range c.ticker.C {
@@ -84,7 +84,7 @@ func (c *DataPullJob) Stop() {
 func (c *DataPullJob) tryExecute() {
 	due, _ := c.gron.IsDue(c.cron, time.Now().Truncate(time.Minute))
 
-	log.Printf("tryExecute job, isDue: %t", due)
+	slog.Info("tryExecute job", "isDue", due)
 
 	if due {
 		c.execute()
@@ -92,7 +92,7 @@ func (c *DataPullJob) tryExecute() {
 }
 
 func (c *DataPullJob) execute() {
-	log.Printf("execute job")
+	slog.Info("execute job")
 
 	orgProject, err := getOrgProject(c.graphqlClient, c.organization, c.projectId)
 
@@ -144,13 +144,14 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		today := now.UTC()
 
 		_, err := queries.UpsertWorkItem(ctx, db.UpsertWorkItemParams{
-			GhID:        issue.Id,
-			ChangeDate:  pgtype.Date{Time: today, Valid: true},
-			Name:        issue.Title,
-			Effort:      pgtype.Int4{Int32: int32(issue.Effort), Valid: true},
-			Status:      pgtype.Text{String: issue.Status, Valid: true},
-			ProjectID:   dbProject.ID,
-			IterationID: pgtype.Int8{Int64: iterationsMap[issue.IterationId], Valid: true},
+			GhID:           issue.Id,
+			ChangeDate:     pgtype.Date{Time: today, Valid: true},
+			Name:           issue.Title,
+			Effort:         pgtype.Int4{Int32: int32(issue.Effort), Valid: true},
+			RemainingHours: pgtype.Int4{Int32: int32(issue.RemainingHours), Valid: true},
+			Status:         pgtype.Text{String: issue.Status, Valid: true},
+			ProjectID:      dbProject.ID,
+			IterationID:    pgtype.Int8{Int64: iterationsMap[issue.IterationId], Valid: true},
 		})
 
 		if err != nil {

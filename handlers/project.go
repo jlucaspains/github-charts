@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +15,7 @@ func (h Handlers) GetProjects(w http.ResponseWriter, r *http.Request) {
 	projects, err := h.Queries.GetProjects(r.Context())
 
 	if err != nil {
-		log.Printf("Error getting iteration data: %s", err)
+		slog.Error("Error getting iteration data", "error", err)
 
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
@@ -41,7 +41,7 @@ func (h Handlers) GetBurnup(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		log.Printf("Error getting burnup data: %s", err)
+		slog.Error("Error getting burnup data", "error", err)
 		status, body := h.ErrorToHttpResult(err)
 		h.JSON(w, status, body)
 	} else {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,8 +46,8 @@ func main() {
 
 	<-done
 
-	log.Print("Stopping jobs...")
-	log.Print("Stopping web server...")
+	slog.Info("Stopping jobs...")
+	slog.Info("Stopping web server...")
 }
 
 func startDataPullJob(queries *db.Queries) func() {
@@ -118,7 +119,7 @@ func startWebServer(queries *db.Queries) func(ctx context.Context) error {
 	certKeyFile, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
 	useTls = useTls && ok
 
-	log.Printf("Starting TLS server on port: %s; use tls: %t", hostPort, useTls)
+	slog.Info("Starting TLS server", "port", hostPort, "usetls", useTls)
 
 	srv := &http.Server{
 		Addr: hostPort,
@@ -138,7 +139,7 @@ func startWebServer(queries *db.Queries) func(ctx context.Context) error {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-	log.Print("Web Server Started")
+	slog.Info("Web Server Started")
 	return srv.Shutdown
 }
 

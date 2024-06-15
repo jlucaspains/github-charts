@@ -2,7 +2,7 @@ package midlewares
 
 import (
 	"bytes"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -33,11 +33,11 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logRespWriter := newLogResponseWriter(w)
 	l.handler.ServeHTTP(logRespWriter, r)
 
-	log.Printf(
-		"url=%s duration=%s status=%d",
-		r.URL.String(),
-		time.Since(startTime).String(),
-		logRespWriter.statusCode)
+	slog.Debug(
+		"request",
+		"url", r.URL,
+		"duration", time.Since(startTime),
+		"status", logRespWriter.statusCode)
 }
 
 func NewLogger(handlerToWrap http.Handler) *Logger {
