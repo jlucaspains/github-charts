@@ -106,7 +106,7 @@ func (c *DataPullJob) execute() {
 
 func saveProjectInformation(project *models.Project, queries db.Querier) error {
 	ctx := context.Background()
-	dbProject, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
+	_, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
 		GhID: project.Id,
 		Name: project.Title,
 	})
@@ -115,7 +115,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		return err
 	}
 
-	iterationsMap := make(map[string]int64)
+	iterationsMap := make(map[string]int32)
 	for _, iteration := range project.Iterations {
 		dbIteration, err := queries.UpsertIteration(ctx, db.UpsertIterationParams{
 			GhID:      iteration.Id,
@@ -150,8 +150,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 			Effort:         pgtype.Int4{Int32: int32(issue.Effort), Valid: true},
 			RemainingHours: pgtype.Int4{Int32: int32(issue.RemainingHours), Valid: true},
 			Status:         pgtype.Text{String: issue.Status, Valid: true},
-			ProjectID:      dbProject.ID,
-			IterationID:    pgtype.Int8{Int64: iterationsMap[issue.IterationId], Valid: true},
+			IterationID:    pgtype.Int4{Int32: iterationsMap[issue.IterationId], Valid: true},
 		})
 
 		if err != nil {

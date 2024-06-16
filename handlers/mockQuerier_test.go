@@ -22,12 +22,12 @@ type MockQuerier struct {
 }
 
 // GetIterationBurndown implements Querier.
-func (m *MockQuerier) GetIterationBurndown(ctx context.Context, id int64) ([]db.GetIterationBurndownRow, error) {
+func (m *MockQuerier) GetIterationBurndown(ctx context.Context, id int32) ([]db.GetIterationBurndownRow, error) {
 	return m.GetIterationBurndownResult, m.GetIterationBurndownError
 }
 
 // GetIterations implements Querier.
-func (m *MockQuerier) GetIterations(ctx context.Context) ([]db.Iteration, error) {
+func (m *MockQuerier) GetIterations(ctx context.Context, projectID int32) ([]db.Iteration, error) {
 	return m.GetIterationsResult, m.GetIterationsError
 }
 

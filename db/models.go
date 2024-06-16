@@ -9,33 +9,33 @@ import (
 )
 
 type Iteration struct {
-	ID        int64
+	ID        int32
 	GhID      string
 	Name      string
 	StartDate pgtype.Date
 	EndDate   pgtype.Date
+	ProjectID int32
 }
 
 type Project struct {
-	ID   int64
+	ID   int32
 	GhID string
 	Name string
 }
 
 type WorkItemHistory struct {
-	ID             int64
+	ID             int32
 	ChangeDate     pgtype.Date
 	GhID           string
-	ProjectID      int64
 	Name           string
 	Status         pgtype.Text
 	Priority       pgtype.Int4
 	RemainingHours pgtype.Int4
 	Effort         pgtype.Int4
-	IterationID    pgtype.Int8
+	IterationID    pgtype.Int4
 }
 
 type WorkItemStatus struct {
-	ID   int64
+	ID   int16
 	Name string
 }

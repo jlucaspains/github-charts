@@ -33,8 +33,9 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logRespWriter := newLogResponseWriter(w)
 	l.handler.ServeHTTP(logRespWriter, r)
 
-	slog.Debug(
-		"request",
+	slog.Info(
+		"WebRequest",
+		"method", r.Method,
 		"url", r.URL,
 		"duration", time.Since(startTime),
 		"status", logRespWriter.statusCode)

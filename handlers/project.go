@@ -23,7 +23,7 @@ func (h Handlers) GetProjects(w http.ResponseWriter, r *http.Request) {
 		result := []*models.Project{}
 		for _, item := range projects {
 			result = append(result, &models.Project{
-				Id:    strconv.FormatInt(item.ID, 10),
+				Id:    strconv.Itoa(int(item.ID)),
 				Title: item.Name,
 			})
 		}
@@ -33,10 +33,10 @@ func (h Handlers) GetProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handlers) GetBurnup(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	idInt64, _ := strconv.ParseInt(id, 10, 64)
+	id := r.PathValue("projectId")
+	idInt, _ := strconv.Atoi(id)
 	burnup, err := h.Queries.GetProjectBurnup(r.Context(), db.GetProjectBurnupParams{
-		ProjectID: idInt64,
+		ProjectID: int32(idInt),
 		Column2:   pgtype.Timestamp{Time: time.Now().AddDate(0, -1, 0), Valid: true},
 	})
 
@@ -52,6 +52,56 @@ func (h Handlers) GetBurnup(w http.ResponseWriter, r *http.Request) {
 				ProjectDay: item.ProjectDay.Time,
 				Qty:        qty.Float64,
 				Status:     item.Status,
+			})
+		}
+
+		h.JSON(w, http.StatusOK, result)
+	}
+}
+
+func (h Handlers) GetIterations(w http.ResponseWriter, r *http.Request) {
+	projectId := r.PathValue("projectId")
+	projectIdInt, _ := strconv.Atoi(projectId)
+	iterations, err := h.Queries.GetIterations(r.Context(), int32(projectIdInt))
+
+	if err != nil {
+		slog.Error("Error getting iteration data: %s", err)
+
+		status, body := h.ErrorToHttpResult(err)
+		h.JSON(w, status, body)
+	} else {
+		result := []*models.Iteration{}
+		for _, item := range iterations {
+			result = append(result, &models.Iteration{
+				Id:        strconv.FormatInt(int64(item.ID), 10),
+				Title:     item.Name,
+				StartDate: item.StartDate.Time,
+				EndDate:   item.EndDate.Time,
+			})
+		}
+
+		h.JSON(w, http.StatusOK, result)
+	}
+}
+
+func (h Handlers) GetBurndown(w http.ResponseWriter, r *http.Request) {
+	iterationId := r.PathValue("iterationId")
+	iterationIdInt, _ := strconv.Atoi(iterationId)
+	burndown, err := h.Queries.GetIterationBurndown(r.Context(), int32(iterationIdInt))
+
+	if err != nil {
+		slog.Error("Error getting burndown data", "error", err)
+		status, body := h.ErrorToHttpResult(err)
+		h.JSON(w, status, body)
+	} else {
+		result := []*models.BurndownItem{}
+		for _, item := range burndown {
+			remaining, _ := item.Remaining.Float64Value()
+			ideal, _ := item.Ideal.Float64Value()
+			result = append(result, &models.BurndownItem{
+				IterationDay: item.IterationDay.Time,
+				Remaining:    remaining.Float64,
+				Ideal:        ideal.Float64,
 			})
 		}
 

@@ -14,6 +14,11 @@
   import { onMount } from "svelte";
 
   /**
+   * @type {string}
+   */
+   export let iteration = null;
+
+  /**
    * @type {HTMLCanvasElement}
    */
   let burndown;
@@ -22,11 +27,6 @@
    * @type {string}
    */
   let error;
-
-  /**
-   * @type {string}
-   */
-  let selectedIteration = null;
 
   /**
    * @type {{id: string, text: string, isCurrent: boolean}[]}
@@ -53,25 +53,22 @@
   const basePath = import.meta.env.VITE_API_BASE_PATH || "/api";
 
   onMount(async () => {
-    await loadIterations();
-    await plotBurndownForIteration(selectedIteration);
+    if (!iteration) {
+      return;
+    }
+    
+    await plotBurndownForIteration();
   });
 
-  function iterationChanged() {
-    plotBurndownForIteration(selectedIteration);
-  }
-
-  /**
-   * @param {string} iteration
-   */
-  async function plotBurndownForIteration(iteration) {
+  async function plotBurndownForIteration() {
     try {
       if (chart) {
         chart.destroy();
       }
+      console.log(iteration);
 
       const response = await fetch(
-        `${basePath}/iterations/${iteration}/burndown`,
+        `${basePath}/projects/1/iterations/${iteration}/burndown`,
       );
 
       if (!response.ok) {
@@ -136,44 +133,9 @@
       error = err.message;
     }
   }
-
-  async function loadIterations() {
-    const response = await fetch(`${basePath}/iterations`);
-
-    if (!response.ok) {
-      const errorJson = await response.json();
-      error = errorJson.errors.join(", ");
-      return;
-    }
-
-    const data = (await response.json()) || [];
-    for (const item of data) {
-      iterations = [...iterations, { id: item.id, text: item.title, isCurrent: isCurrentIteration(item) }];
-    }
-
-    selectedIteration = iterations.find((i) => i.isCurrent)?.id ?? null;
-  }
-
-  /**
-   * @param {{ title: string; startDate: string; endDate: string; }} item
-   */
-  function isCurrentIteration(item) {
-    const today = new Date().toISOString().substring(0, 10);
-    return (
-      item.startDate <= today &&
-      item.endDate >= today
-    );
-  }
 </script>
 
-<select bind:value={selectedIteration} on:change={iterationChanged}>
-    <option value={null}>Select Iteration...</option>
-    {#each iterations as iteration}
-    <option value={iteration.id}>{iteration.text}</option>
-  {/each}
-</select>
-
-<canvas bind:this={burndown} width={600} height={400} />
+<canvas bind:this={burndown} width={500} height={400} />
 
 {#if error}
   <p>{error}</p>

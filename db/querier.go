@@ -3,8 +3,8 @@ package db
 import "context"
 
 type Querier interface {
-	GetIterationBurndown(ctx context.Context, id int64) ([]GetIterationBurndownRow, error)
-	GetIterations(ctx context.Context) ([]Iteration, error)
+	GetIterationBurndown(ctx context.Context, id int32) ([]GetIterationBurndownRow, error)
+	GetIterations(ctx context.Context, projectID int32) ([]Iteration, error)
 	GetProjectBurnup(ctx context.Context, arg GetProjectBurnupParams) ([]GetProjectBurnupRow, error)
 	GetProjects(ctx context.Context) ([]Project, error)
 	GetWorkItemsForIteration(ctx context.Context, name string) ([]GetWorkItemsForIterationRow, error)

@@ -11,7 +11,13 @@
     Legend,
     LineController,
   } from "chart.js";
-  import { onMount } from "svelte";
+    import { onMount } from "svelte";
+  // import { onMount } from "svelte";
+
+  /**
+   * @type {string}
+   */
+  export let project = null;
 
   /**
    * @type {HTMLCanvasElement}
@@ -22,16 +28,6 @@
    * @type {string}
    */
   let error;
-
-  /**
-   * @type {string}
-   */
-  let selectedIteration = "1";
-
-  /**
-   * @type {{id: string, text: string, isCurrent: boolean}[]}
-   */
-  let iterations = [];
 
   /**
    * @type {ChartJS}
@@ -50,16 +46,20 @@
     Legend,
   );
 
+  /**
+   * @type {string}
+   */
   const basePath = import.meta.env.VITE_API_BASE_PATH || "/api";
 
   onMount(async () => {
-    await plotBurnupForProject("1");
+    if (!project) {
+      return;
+    }
+    
+    await plotBurnupForProject();
   });
 
-  /**
-   * @param {string} project
-   */
-  async function plotBurnupForProject(project) {
+  async function plotBurnupForProject() {
     try {
       if (chart) {
         chart.destroy();
@@ -149,7 +149,7 @@
   }
 </script>
 
-<canvas bind:this={burndown} width={600} height={400} />
+<canvas bind:this={burndown} width={500} height={400} />
 
 {#if error}
   <p>{error}</p>

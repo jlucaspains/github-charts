@@ -4,11 +4,11 @@ join iteration on work_item.iteration_id = iteration.id
 WHERE iteration.name = $1;
 
 -- name: UpsertWorkItem :one
-INSERT INTO work_item_history (change_date, gh_id, project_id, name, status, priority, remaining_hours, effort, iteration_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO work_item_history (change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 ON CONFLICT(change_date, gh_id) 
 DO UPDATE SET
-  project_id = EXCLUDED.project_id,
+  iteration_id = EXCLUDED.iteration_id,
   "name" = EXCLUDED.name,
   "status" = EXCLUDED.status,
   priority = EXCLUDED.priority,
@@ -26,8 +26,8 @@ DO UPDATE SET
 RETURNING *;
 
 -- name: UpsertIteration :one
-INSERT INTO iteration (gh_id, name, start_date, end_date)
-VALUES ($1, $2, $3, $4)
+INSERT INTO iteration (gh_id, name, start_date, end_date, project_id)
+VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT(gh_id) 
 DO UPDATE SET
   "name" = EXCLUDED.name,
@@ -44,7 +44,7 @@ DO UPDATE SET
 RETURNING *;
 
 -- name: GetIterations :many
-SELECT * FROM iteration;
+SELECT * FROM iteration where project_id = $1;
 
 -- name: GetProjects :many
 SELECT * FROM project;
@@ -90,6 +90,7 @@ select statuses.name as status
                                , now()::timestamp
                                , '1 day'::interval) dd) dates on true
         left join work_item_history on work_item_history.change_date = dates.project_day and work_item_history.status = statuses.name
- where (work_item_history.project_id = $1 or project_id is null)
+        left join iteration on work_item_history.iteration_id = iteration.id
+ where (iteration.project_id = $1 or iteration.project_id is null)
  group by statuses.name, dates.project_day
 order by statuses.name, dates.project_day;
