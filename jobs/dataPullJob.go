@@ -51,6 +51,10 @@ func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, g
 	c.organization = organization
 	c.queries = queries
 
+	slog.Info("Init DataPullJob job",
+		"projectId", c.projectId,
+		"org", c.organization)
+
 	httpClient := http.Client{
 		Transport: &authedTransport{
 			key:     c.ghToken,
@@ -97,6 +101,7 @@ func (c *DataPullJob) execute() {
 	orgProject, err := getOrgProject(c.graphqlClient, c.organization, c.projectId)
 
 	if err != nil {
+		slog.Error("Error fetching project information", "error", err)
 		return
 	}
 
@@ -112,6 +117,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 	})
 
 	if err != nil {
+		slog.Error("Error on UpsertProject", "error", err)
 		return err
 	}
 
@@ -127,6 +133,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		iterationsMap[iteration.Id] = dbIteration.ID
 
 		if err != nil {
+			slog.Error("Error on UpsertIteration", "error", err)
 			return err
 		}
 	}
@@ -135,6 +142,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		_, err := queries.UpsertWorkItemStatus(ctx, status)
 
 		if err != nil {
+			slog.Error("Error on UpserWorkItemStatus", "error", err)
 			return err
 		}
 	}
@@ -154,6 +162,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		})
 
 		if err != nil {
+			slog.Error("Error on UpserWorkItem", "error", err)
 			return err
 		}
 	}
