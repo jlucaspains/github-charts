@@ -33,6 +33,7 @@ type WorkItemHistory struct {
 	RemainingHours pgtype.Int4
 	Effort         pgtype.Int4
 	IterationID    pgtype.Int4
+	ProjectID      int32
 }
 
 type WorkItemStatus struct {

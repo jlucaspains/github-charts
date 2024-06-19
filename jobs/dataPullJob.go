@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
@@ -15,15 +16,13 @@ import (
 )
 
 type DataPullJob struct {
-	cron          string
-	ticker        *time.Ticker
-	gron          *gronx.Gronx
-	running       bool
-	queries       db.Querier
-	ghToken       string
-	projectId     int
-	organization  string
-	graphqlClient graphql.Client
+	cron           string
+	ticker         *time.Ticker
+	gron           *gronx.Gronx
+	running        bool
+	queries        db.Querier
+	projects       []models.JobConfigItem
+	graphqlClients map[string]graphql.Client
 }
 
 type authedTransport struct {
@@ -36,7 +35,7 @@ func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.wrapped.RoundTrip(req)
 }
 
-func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, ghToken string, organization string) error {
+func (c *DataPullJob) Init(schedule string, queries db.Querier, projects []models.JobConfigItem) error {
 	c.gron = gronx.New()
 
 	if schedule == "" || !c.gron.IsValid(schedule) {
@@ -45,23 +44,27 @@ func (c *DataPullJob) Init(schedule string, queries db.Querier, projectId int, g
 	}
 
 	c.cron = schedule
-	c.projectId = projectId
+	c.projects = projects
 	c.ticker = time.NewTicker(time.Minute)
-	c.ghToken = ghToken
-	c.organization = organization
 	c.queries = queries
 
-	slog.Info("Init DataPullJob job",
-		"projectId", c.projectId,
-		"org", c.organization)
+	slog.Info("Init DataPullJob job")
 
-	httpClient := http.Client{
-		Transport: &authedTransport{
-			key:     c.ghToken,
-			wrapped: http.DefaultTransport,
-		},
+	for index, item := range c.projects {
+		slog.Info("Project configuration", "index", index, "item", item)
 	}
-	c.graphqlClient = graphql.NewClient("https://api.github.com/graphql", &httpClient)
+
+	c.graphqlClients = make(map[string]graphql.Client)
+	for _, project := range projects {
+		httpClient := http.Client{
+			Transport: &authedTransport{
+				key:     project.Token,
+				wrapped: http.DefaultTransport,
+			},
+		}
+		graphqlClient := graphql.NewClient("https://api.github.com/graphql", &httpClient)
+		c.graphqlClients[project.GetUniqueName()] = graphqlClient
+	}
 
 	return nil
 }
@@ -96,22 +99,35 @@ func (c *DataPullJob) tryExecute() {
 }
 
 func (c *DataPullJob) execute() {
-	slog.Info("execute job")
+	for _, project := range c.projects {
+		projectId, _ := strconv.Atoi(project.Project)
+		if project.OrgName != "" {
+			slog.Info("Data pull job started", "orgName", project.OrgName, "projectId", projectId)
+			orgProject, err := getOrgProject(c.graphqlClients[project.GetUniqueName()], project.OrgName, projectId)
 
-	orgProject, err := getOrgProject(c.graphqlClient, c.organization, c.projectId)
+			if err != nil {
+				slog.Error("Error fetching project information", "error", err)
+			} else {
+				project := parseOrgProjectInformation(orgProject)
+				saveProjectInformation(project, c.queries)
+			}
+		} else {
+			slog.Info("Data pull job started", "repoOwner", project.RepoOwner, "repoName", project.RepoName, "projectId", projectId)
+			repoProject, err := getRepoProject(c.graphqlClients[project.GetUniqueName()], project.RepoOwner, project.RepoName, projectId)
 
-	if err != nil {
-		slog.Error("Error fetching project information", "error", err)
-		return
+			if err != nil {
+				slog.Error("Error fetching project information", "error", err)
+			} else {
+				project := parseRepoProjectInformation(repoProject)
+				saveProjectInformation(project, c.queries)
+			}
+		}
 	}
-
-	project := parseProjectInformation(orgProject)
-	saveProjectInformation(project, c.queries)
 }
 
 func saveProjectInformation(project *models.Project, queries db.Querier) error {
 	ctx := context.Background()
-	_, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
+	dbProject, err := queries.UpsertProject(ctx, db.UpsertProjectParams{
 		GhID: project.Id,
 		Name: project.Title,
 	})
@@ -126,6 +142,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 		dbIteration, err := queries.UpsertIteration(ctx, db.UpsertIterationParams{
 			GhID:      iteration.Id,
 			Name:      iteration.Title,
+			ProjectID: dbProject.ID,
 			StartDate: pgtype.Date{Time: iteration.StartDate, Valid: true},
 			EndDate:   pgtype.Date{Time: iteration.EndDate, Valid: true},
 		})
@@ -150,6 +167,7 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 	for _, issue := range project.Issues {
 		now := time.Now().Truncate(24 * time.Hour)
 		today := now.UTC()
+		iterationId, iterationIdOk := iterationsMap[issue.IterationId]
 
 		_, err := queries.UpsertWorkItem(ctx, db.UpsertWorkItemParams{
 			GhID:           issue.Id,
@@ -158,7 +176,8 @@ func saveProjectInformation(project *models.Project, queries db.Querier) error {
 			Effort:         pgtype.Int4{Int32: int32(issue.Effort), Valid: true},
 			RemainingHours: pgtype.Int4{Int32: int32(issue.RemainingHours), Valid: true},
 			Status:         pgtype.Text{String: issue.Status, Valid: true},
-			IterationID:    pgtype.Int4{Int32: iterationsMap[issue.IterationId], Valid: true},
+			IterationID:    pgtype.Int4{Int32: iterationId, Valid: iterationIdOk},
+			ProjectID:      dbProject.ID,
 		})
 
 		if err != nil {
@@ -196,7 +215,33 @@ func getOrgProject(graphqlClient graphql.Client, orgName string, projectId int) 
 	return orgProject, nil
 }
 
-func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models.Project {
+func getRepoProject(graphqlClient graphql.Client, repoOwner string, repoName string, projectId int) (*getRepositoryProjectResponse, error) {
+	hasNextPage := true
+	isFirstPage := true
+	cursor := ""
+	repoProject := &getRepositoryProjectResponse{}
+
+	for hasNextPage {
+		result, err := getRepositoryProject(context.Background(), graphqlClient, repoOwner, repoName, projectId, 5, cursor)
+		if err != nil {
+			return nil, err
+		}
+
+		if isFirstPage {
+			repoProject = result
+		} else {
+			repoProject.Repository.ProjectV2.Items.Nodes = append(repoProject.Repository.ProjectV2.Items.Nodes, result.Repository.ProjectV2.Items.Nodes...)
+		}
+
+		isFirstPage = false
+		hasNextPage = repoProject.Repository.ProjectV2.Items.PageInfo.HasNextPage
+		cursor = repoProject.Repository.ProjectV2.Items.PageInfo.EndCursor
+	}
+
+	return repoProject, nil
+}
+
+func parseOrgProjectInformation(orgProject *getOrganizationProjectResponse) *models.Project {
 	project := &models.Project{
 		Id:         orgProject.Organization.ProjectV2.Id,
 		Title:      orgProject.Organization.ProjectV2.Title,
@@ -231,6 +276,10 @@ func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models
 	}
 
 	for _, item := range orgProject.Organization.ProjectV2.Items.Nodes {
+		if item.Content.GetTypename() != "Issue" {
+			continue
+		}
+
 		content := item.Content.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
 		issue := models.Issue{
 			Id:        item.Id,
@@ -249,6 +298,78 @@ func parseProjectInformation(orgProject *getOrganizationProjectResponse) *models
 
 		if item.Iteration != nil {
 			iteration := item.Iteration.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
+
+			issue.IterationId = iteration.IterationId
+		}
+
+		// extract labels from isues
+		for _, label := range content.Labels.Nodes {
+			issue.Labels = append(issue.Labels, label.Name)
+		}
+
+		project.Issues = append(project.Issues, issue)
+	}
+
+	return project
+}
+
+func parseRepoProjectInformation(orgProject *getRepositoryProjectResponse) *models.Project {
+	project := &models.Project{
+		Id:         orgProject.Repository.ProjectV2.Id,
+		Title:      orgProject.Repository.ProjectV2.Title,
+		Iterations: []models.Iteration{},
+		Statuses:   []string{},
+	}
+
+	status := orgProject.Repository.ProjectV2.Status.(*getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField)
+
+	for _, option := range status.Options {
+		project.Statuses = append(project.Statuses, option.Name)
+	}
+
+	iteration := orgProject.Repository.ProjectV2.Iteration.(*getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField)
+	for _, completedIteration := range iteration.Configuration.CompletedIterations {
+		startDate, _ := time.Parse("2006-01-02", completedIteration.StartDate)
+		project.Iterations = append(project.Iterations, models.Iteration{
+			Id:        completedIteration.Id,
+			Title:     completedIteration.Title,
+			StartDate: startDate,
+			EndDate:   startDate.Add(time.Duration(completedIteration.Duration) * 24 * time.Hour),
+		})
+	}
+	for _, futureIteration := range iteration.Configuration.Iterations {
+		startDate, _ := time.Parse("2006-01-02", futureIteration.StartDate)
+		project.Iterations = append(project.Iterations, models.Iteration{
+			Id:        futureIteration.Id,
+			Title:     futureIteration.Title,
+			StartDate: startDate,
+			EndDate:   startDate.Add(time.Duration(futureIteration.Duration) * 24 * time.Hour),
+		})
+	}
+
+	for _, item := range orgProject.Repository.ProjectV2.Items.Nodes {
+		if item.Content.GetTypename() != "Issue" {
+			continue
+		}
+
+		content := item.Content.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
+		issue := models.Issue{
+			Id:        item.Id,
+			Title:     content.Title,
+			CreatedAt: content.CreatedAt,
+			ClosedAt:  content.ClosedAt,
+			Status:    item.Status.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue).Name,
+		}
+		if item.Effort != nil {
+			issue.Effort = item.Effort.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
+		}
+
+		if item.Remaining != nil {
+			issue.RemainingHours = item.Remaining.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue).Number
+		}
+
+		if item.Iteration != nil {
+			iteration := item.Iteration.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
 
 			issue.IterationId = iteration.IterationId
 		}

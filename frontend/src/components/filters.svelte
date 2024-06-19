@@ -47,6 +47,7 @@
             error = errorJson.errors.join(", ");
             return;
         }
+        iterations = [];
 
         const data = (await response.json()) || [];
         for (const item of data) {
@@ -85,7 +86,7 @@
         }
 
         selectedProject = projects[0].id ?? null;
-        projectChanged();
+        await projectChanged();
         await loadIterations();
     }
 
@@ -100,8 +101,9 @@
     function iterationChanged() {
         dispatch("iterationChanged", { iterationId: selectedIteration });
     }
-    function projectChanged() {
+    async function projectChanged() {
         dispatch("projectChanged", { projectId: selectedProject });
+        await loadIterations();
     }
 </script>
 

@@ -171,7 +171,7 @@ func (q *Queries) GetProjects(ctx context.Context) ([]Project, error) {
 }
 
 const getWorkItemsForIteration = `-- name: GetWorkItemsForIteration :many
-SELECT work_item_history.id, change_date, work_item_history.gh_id, work_item_history.name, status, priority, remaining_hours, effort, iteration_id, iteration.id, iteration.gh_id, iteration.name, start_date, end_date, project_id FROM work_item_history
+SELECT work_item_history.id, change_date, work_item_history.gh_id, work_item_history.name, status, priority, remaining_hours, effort, iteration_id, work_item_history.project_id, iteration.id, iteration.gh_id, iteration.name, start_date, end_date, iteration.project_id FROM work_item_history
 join iteration on work_item.iteration_id = iteration.id
 WHERE iteration.name = $1
 `
@@ -186,12 +186,13 @@ type GetWorkItemsForIterationRow struct {
 	RemainingHours pgtype.Int4
 	Effort         pgtype.Int4
 	IterationID    pgtype.Int4
+	ProjectID      int32
 	ID_2           int32
 	GhID_2         string
 	Name_2         string
 	StartDate      pgtype.Date
 	EndDate        pgtype.Date
-	ProjectID      int32
+	ProjectID_2    int32
 }
 
 func (q *Queries) GetWorkItemsForIteration(ctx context.Context, name string) ([]GetWorkItemsForIterationRow, error) {
@@ -213,12 +214,13 @@ func (q *Queries) GetWorkItemsForIteration(ctx context.Context, name string) ([]
 			&i.RemainingHours,
 			&i.Effort,
 			&i.IterationID,
+			&i.ProjectID,
 			&i.ID_2,
 			&i.GhID_2,
 			&i.Name_2,
 			&i.StartDate,
 			&i.EndDate,
-			&i.ProjectID,
+			&i.ProjectID_2,
 		); err != nil {
 			return nil, err
 		}
@@ -291,18 +293,18 @@ func (q *Queries) UpsertProject(ctx context.Context, arg UpsertProjectParams) (P
 }
 
 const upsertWorkItem = `-- name: UpsertWorkItem :one
-INSERT INTO work_item_history (change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO work_item_history (change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id, project_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT(change_date, gh_id) 
 DO UPDATE SET
-  iteration_id = EXCLUDED.iteration_id,
   "name" = EXCLUDED.name,
   "status" = EXCLUDED.status,
   priority = EXCLUDED.priority,
   remaining_hours = EXCLUDED.remaining_hours,
   effort = EXCLUDED.effort,
-  iteration_id = EXCLUDED.iteration_id
-RETURNING id, change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id
+  iteration_id = EXCLUDED.iteration_id,
+  project_id = EXCLUDED.project_id
+RETURNING id, change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id, project_id
 `
 
 type UpsertWorkItemParams struct {
@@ -314,6 +316,7 @@ type UpsertWorkItemParams struct {
 	RemainingHours pgtype.Int4
 	Effort         pgtype.Int4
 	IterationID    pgtype.Int4
+	ProjectID      int32
 }
 
 func (q *Queries) UpsertWorkItem(ctx context.Context, arg UpsertWorkItemParams) (WorkItemHistory, error) {
@@ -326,6 +329,7 @@ func (q *Queries) UpsertWorkItem(ctx context.Context, arg UpsertWorkItemParams) 
 		arg.RemainingHours,
 		arg.Effort,
 		arg.IterationID,
+		arg.ProjectID,
 	)
 	var i WorkItemHistory
 	err := row.Scan(
@@ -338,6 +342,7 @@ func (q *Queries) UpsertWorkItem(ctx context.Context, arg UpsertWorkItemParams) 
 		&i.RemainingHours,
 		&i.Effort,
 		&i.IterationID,
+		&i.ProjectID,
 	)
 	return i, err
 }

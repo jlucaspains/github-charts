@@ -33,6 +33,32 @@ func (v *__getOrganizationProjectInput) GetLabels_per_issue_count() int {
 // GetCursor returns __getOrganizationProjectInput.Cursor, and is useful for accessing the field via an interface.
 func (v *__getOrganizationProjectInput) GetCursor() string { return v.Cursor }
 
+// __getRepositoryProjectInput is used internally by genqlient
+type __getRepositoryProjectInput struct {
+	Repo_owner             string `json:"repo_owner"`
+	Repo_name              string `json:"repo_name"`
+	Project_number         int    `json:"project_number"`
+	Labels_per_issue_count int    `json:"labels_per_issue_count"`
+	Cursor                 string `json:"cursor"`
+}
+
+// GetRepo_owner returns __getRepositoryProjectInput.Repo_owner, and is useful for accessing the field via an interface.
+func (v *__getRepositoryProjectInput) GetRepo_owner() string { return v.Repo_owner }
+
+// GetRepo_name returns __getRepositoryProjectInput.Repo_name, and is useful for accessing the field via an interface.
+func (v *__getRepositoryProjectInput) GetRepo_name() string { return v.Repo_name }
+
+// GetProject_number returns __getRepositoryProjectInput.Project_number, and is useful for accessing the field via an interface.
+func (v *__getRepositoryProjectInput) GetProject_number() int { return v.Project_number }
+
+// GetLabels_per_issue_count returns __getRepositoryProjectInput.Labels_per_issue_count, and is useful for accessing the field via an interface.
+func (v *__getRepositoryProjectInput) GetLabels_per_issue_count() int {
+	return v.Labels_per_issue_count
+}
+
+// GetCursor returns __getRepositoryProjectInput.Cursor, and is useful for accessing the field via an interface.
+func (v *__getRepositoryProjectInput) GetCursor() string { return v.Cursor }
+
 // getOrganizationProjectOrganization includes the requested fields of the GraphQL type Organization.
 // The GraphQL type's documentation follows.
 //
@@ -2449,6 +2475,2422 @@ func (v *getOrganizationProjectResponse) GetOrganization() getOrganizationProjec
 	return v.Organization
 }
 
+// getRepositoryProjectRepository includes the requested fields of the GraphQL type Repository.
+// The GraphQL type's documentation follows.
+//
+// A repository contains the content for a project.
+type getRepositoryProjectRepository struct {
+	// Finds and returns the Project according to the provided Project number.
+	ProjectV2 getRepositoryProjectRepositoryProjectV2 `json:"projectV2"`
+}
+
+// GetProjectV2 returns getRepositoryProjectRepository.ProjectV2, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepository) GetProjectV2() getRepositoryProjectRepositoryProjectV2 {
+	return v.ProjectV2
+}
+
+// getRepositoryProjectRepositoryProjectV2 includes the requested fields of the GraphQL type ProjectV2.
+// The GraphQL type's documentation follows.
+//
+// New projects that manage issues, pull requests and drafts using tables and boards.
+type getRepositoryProjectRepositoryProjectV2 struct {
+	// The Node ID of the ProjectV2 object
+	Id string `json:"id"`
+	// The project's name.
+	Title string `json:"title"`
+	// A field of the project
+	Status getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration `json:"-"`
+	// A field of the project
+	Iteration getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration `json:"-"`
+	// List of items in the project
+	Items getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection `json:"items"`
+}
+
+// GetId returns getRepositoryProjectRepositoryProjectV2.Id, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2) GetId() string { return v.Id }
+
+// GetTitle returns getRepositoryProjectRepositoryProjectV2.Title, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2) GetTitle() string { return v.Title }
+
+// GetStatus returns getRepositoryProjectRepositoryProjectV2.Status, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2) GetStatus() getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration {
+	return v.Status
+}
+
+// GetIteration returns getRepositoryProjectRepositoryProjectV2.Iteration, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2) GetIteration() getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration {
+	return v.Iteration
+}
+
+// GetItems returns getRepositoryProjectRepositoryProjectV2.Items, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2) GetItems() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection {
+	return v.Items
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getRepositoryProjectRepositoryProjectV2
+		Status    json.RawMessage `json:"status"`
+		Iteration json.RawMessage `json:"iteration"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getRepositoryProjectRepositoryProjectV2 = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.Status
+		src := firstPass.Status
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2.Status: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.Iteration
+		src := firstPass.Iteration
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2.Iteration: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalgetRepositoryProjectRepositoryProjectV2 struct {
+	Id string `json:"id"`
+
+	Title string `json:"title"`
+
+	Status json.RawMessage `json:"status"`
+
+	Iteration json.RawMessage `json:"iteration"`
+
+	Items getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection `json:"items"`
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2) __premarshalJSON() (*__premarshalgetRepositoryProjectRepositoryProjectV2, error) {
+	var retval __premarshalgetRepositoryProjectRepositoryProjectV2
+
+	retval.Id = v.Id
+	retval.Title = v.Title
+	{
+
+		dst := &retval.Status
+		src := v.Status
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2.Status: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.Iteration
+		src := v.Iteration
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2.Iteration: %w", err)
+		}
+	}
+	retval.Items = v.Items
+	return &retval, nil
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection includes the requested fields of the GraphQL type ProjectV2ItemConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for ProjectV2Item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection struct {
+	// Information to aid in pagination.
+	PageInfo getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo `json:"pageInfo"`
+	// A list of nodes.
+	Nodes []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item `json:"nodes"`
+}
+
+// GetPageInfo returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection) GetPageInfo() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo {
+	return v.PageInfo
+}
+
+// GetNodes returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection) GetNodes() []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item {
+	return v.Nodes
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item includes the requested fields of the GraphQL type ProjectV2Item.
+// The GraphQL type's documentation follows.
+//
+// An item within a Project.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item struct {
+	// The Node ID of the ProjectV2Item object
+	Id string `json:"id"`
+	// The field value of the first project field which matches the 'name' argument that is set on the item.
+	Status getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue `json:"-"`
+	// The field value of the first project field which matches the 'name' argument that is set on the item.
+	Effort getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue `json:"-"`
+	// The field value of the first project field which matches the 'name' argument that is set on the item.
+	Remaining getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue `json:"-"`
+	// The field value of the first project field which matches the 'name' argument that is set on the item.
+	Iteration getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue `json:"-"`
+	// The content of the referenced draft issue, issue, or pull request
+	Content getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent `json:"-"`
+}
+
+// GetId returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Id, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetId() string {
+	return v.Id
+}
+
+// GetStatus returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Status, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetStatus() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue {
+	return v.Status
+}
+
+// GetEffort returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Effort, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetEffort() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue {
+	return v.Effort
+}
+
+// GetRemaining returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Remaining, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetRemaining() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue {
+	return v.Remaining
+}
+
+// GetIteration returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Iteration, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetIteration() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue {
+	return v.Iteration
+}
+
+// GetContent returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Content, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) GetContent() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent {
+	return v.Content
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item
+		Status    json.RawMessage `json:"status"`
+		Effort    json.RawMessage `json:"effort"`
+		Remaining json.RawMessage `json:"remaining"`
+		Iteration json.RawMessage `json:"iteration"`
+		Content   json.RawMessage `json:"content"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.Status
+		src := firstPass.Status
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Status: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.Effort
+		src := firstPass.Effort
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Effort: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.Remaining
+		src := firstPass.Remaining
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Remaining: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.Iteration
+		src := firstPass.Iteration
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Iteration: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.Content
+		src := firstPass.Content
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Content: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item struct {
+	Id string `json:"id"`
+
+	Status json.RawMessage `json:"status"`
+
+	Effort json.RawMessage `json:"effort"`
+
+	Remaining json.RawMessage `json:"remaining"`
+
+	Iteration json.RawMessage `json:"iteration"`
+
+	Content json.RawMessage `json:"content"`
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item) __premarshalJSON() (*__premarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item, error) {
+	var retval __premarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item
+
+	retval.Id = v.Id
+	{
+
+		dst := &retval.Status
+		src := v.Status
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Status: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.Effort
+		src := v.Effort
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Effort: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.Remaining
+		src := v.Remaining
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Remaining: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.Iteration
+		src := v.Iteration
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Iteration: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.Content
+		src := v.Content
+		var err error
+		*dst, err = __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item.Content: %w", err)
+		}
+	}
+	return &retval, nil
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent includes the requested fields of the GraphQL interface ProjectV2ItemContent.
+//
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest
+// The GraphQL type's documentation follows.
+//
+// Types that can be inside Project Items.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent(b []byte, v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "DraftIssue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue)
+		return json.Unmarshal(b, *v)
+	case "Issue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
+		return json.Unmarshal(b, *v)
+	case "PullRequest":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2ItemContent.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent(v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue:
+		typename = "DraftIssue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue:
+		typename = "Issue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest:
+		typename = "PullRequest"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContent: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue includes the requested fields of the GraphQL type DraftIssue.
+// The GraphQL type's documentation follows.
+//
+// A draft issue within a project.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentDraftIssue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue includes the requested fields of the GraphQL type Issue.
+// The GraphQL type's documentation follows.
+//
+// An Issue is a place to discuss ideas, enhancements, tasks, and bugs for a project.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue struct {
+	Typename string `json:"__typename"`
+	// Identifies the issue title.
+	Title string `json:"title"`
+	// Identifies the date and time when the object was created.
+	CreatedAt time.Time `json:"createdAt"`
+	// Identifies the date and time when the object was closed.
+	ClosedAt time.Time `json:"closedAt"`
+	// A list of labels associated with the object.
+	Labels getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection `json:"labels"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) GetTypename() string {
+	return v.Typename
+}
+
+// GetTitle returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue.Title, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) GetTitle() string {
+	return v.Title
+}
+
+// GetCreatedAt returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) GetCreatedAt() time.Time {
+	return v.CreatedAt
+}
+
+// GetClosedAt returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue.ClosedAt, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) GetClosedAt() time.Time {
+	return v.ClosedAt
+}
+
+// GetLabels returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue.Labels, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue) GetLabels() getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection {
+	return v.Labels
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection includes the requested fields of the GraphQL type LabelConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Label.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection struct {
+	// A list of nodes.
+	Nodes []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel `json:"nodes"`
+}
+
+// GetNodes returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection) GetNodes() []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel {
+	return v.Nodes
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel includes the requested fields of the GraphQL type Label.
+// The GraphQL type's documentation follows.
+//
+// A label for categorizing Issues, Pull Requests, Milestones, or Discussions with a given Repository.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel struct {
+	// Identifies the label name.
+	Name string `json:"name"`
+}
+
+// GetName returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel.Name, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel) GetName() string {
+	return v.Name
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest includes the requested fields of the GraphQL type PullRequest.
+// The GraphQL type's documentation follows.
+//
+// A repository pull request.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentPullRequest) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue includes the requested fields of the GraphQL type ProjectV2ItemFieldDateValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a date field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue includes the requested fields of the GraphQL type ProjectV2ItemFieldIterationValue.
+// The GraphQL type's documentation follows.
+//
+// The value of an iteration field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue includes the requested fields of the GraphQL type ProjectV2ItemFieldLabelValue.
+// The GraphQL type's documentation follows.
+//
+// The value of the labels field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue includes the requested fields of the GraphQL type ProjectV2ItemFieldMilestoneValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a milestone field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue includes the requested fields of the GraphQL type ProjectV2ItemFieldNumberValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a number field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue struct {
+	Typename string `json:"__typename"`
+	// Number as a float(8)
+	Number float64 `json:"number"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue) GetTypename() string {
+	return v.Typename
+}
+
+// GetNumber returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue.Number, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue) GetNumber() float64 {
+	return v.Number
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue includes the requested fields of the GraphQL type ProjectV2ItemFieldPullRequestValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a pull request field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue includes the requested fields of the GraphQL type ProjectV2ItemFieldRepositoryValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a repository field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue includes the requested fields of the GraphQL type ProjectV2ItemFieldReviewerValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a reviewers field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue includes the requested fields of the GraphQL type ProjectV2ItemFieldSingleSelectValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a single select field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue includes the requested fields of the GraphQL type ProjectV2ItemFieldTextValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a text field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue includes the requested fields of the GraphQL type ProjectV2ItemFieldUserValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a user field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue includes the requested fields of the GraphQL interface ProjectV2ItemFieldValue.
+//
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue
+// The GraphQL type's documentation follows.
+//
+// Project field values
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue(b []byte, v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2ItemFieldDateValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldIterationValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldLabelValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldMilestoneValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldNumberValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldPullRequestValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldRepositoryValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldReviewerValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldSingleSelectValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldTextValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldUserValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2ItemFieldValue.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue(v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue:
+		typename = "ProjectV2ItemFieldDateValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldDateValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue:
+		typename = "ProjectV2ItemFieldIterationValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldIterationValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue:
+		typename = "ProjectV2ItemFieldLabelValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldLabelValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue:
+		typename = "ProjectV2ItemFieldMilestoneValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldMilestoneValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue:
+		typename = "ProjectV2ItemFieldNumberValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue:
+		typename = "ProjectV2ItemFieldPullRequestValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldPullRequestValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue:
+		typename = "ProjectV2ItemFieldRepositoryValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldRepositoryValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue:
+		typename = "ProjectV2ItemFieldReviewerValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldReviewerValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue:
+		typename = "ProjectV2ItemFieldSingleSelectValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldSingleSelectValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue:
+		typename = "ProjectV2ItemFieldTextValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldTextValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue:
+		typename = "ProjectV2ItemFieldUserValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldUserValue
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldValue: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue includes the requested fields of the GraphQL type ProjectV2ItemFieldDateValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a date field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue includes the requested fields of the GraphQL type ProjectV2ItemFieldIterationValue.
+// The GraphQL type's documentation follows.
+//
+// The value of an iteration field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue struct {
+	Typename string `json:"__typename"`
+	// The ID of the iteration.
+	IterationId string `json:"iterationId"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue) GetTypename() string {
+	return v.Typename
+}
+
+// GetIterationId returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue.IterationId, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue) GetIterationId() string {
+	return v.IterationId
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue includes the requested fields of the GraphQL type ProjectV2ItemFieldLabelValue.
+// The GraphQL type's documentation follows.
+//
+// The value of the labels field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue includes the requested fields of the GraphQL type ProjectV2ItemFieldMilestoneValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a milestone field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue includes the requested fields of the GraphQL type ProjectV2ItemFieldNumberValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a number field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue includes the requested fields of the GraphQL type ProjectV2ItemFieldPullRequestValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a pull request field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue includes the requested fields of the GraphQL type ProjectV2ItemFieldRepositoryValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a repository field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue includes the requested fields of the GraphQL type ProjectV2ItemFieldReviewerValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a reviewers field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue includes the requested fields of the GraphQL type ProjectV2ItemFieldSingleSelectValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a single select field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue includes the requested fields of the GraphQL type ProjectV2ItemFieldTextValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a text field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue includes the requested fields of the GraphQL type ProjectV2ItemFieldUserValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a user field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue includes the requested fields of the GraphQL interface ProjectV2ItemFieldValue.
+//
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue
+// The GraphQL type's documentation follows.
+//
+// Project field values
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue(b []byte, v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2ItemFieldDateValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldIterationValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldLabelValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldMilestoneValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldNumberValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldPullRequestValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldRepositoryValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldReviewerValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldSingleSelectValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldTextValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldUserValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2ItemFieldValue.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue(v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue:
+		typename = "ProjectV2ItemFieldDateValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldDateValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue:
+		typename = "ProjectV2ItemFieldIterationValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue:
+		typename = "ProjectV2ItemFieldLabelValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldLabelValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue:
+		typename = "ProjectV2ItemFieldMilestoneValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldMilestoneValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue:
+		typename = "ProjectV2ItemFieldNumberValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldNumberValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue:
+		typename = "ProjectV2ItemFieldPullRequestValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldPullRequestValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue:
+		typename = "ProjectV2ItemFieldRepositoryValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldRepositoryValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue:
+		typename = "ProjectV2ItemFieldReviewerValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldReviewerValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue:
+		typename = "ProjectV2ItemFieldSingleSelectValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldSingleSelectValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue:
+		typename = "ProjectV2ItemFieldTextValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldTextValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue:
+		typename = "ProjectV2ItemFieldUserValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldUserValue
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldValue: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue includes the requested fields of the GraphQL type ProjectV2ItemFieldDateValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a date field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue includes the requested fields of the GraphQL type ProjectV2ItemFieldIterationValue.
+// The GraphQL type's documentation follows.
+//
+// The value of an iteration field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue includes the requested fields of the GraphQL type ProjectV2ItemFieldLabelValue.
+// The GraphQL type's documentation follows.
+//
+// The value of the labels field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue includes the requested fields of the GraphQL type ProjectV2ItemFieldMilestoneValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a milestone field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue includes the requested fields of the GraphQL type ProjectV2ItemFieldNumberValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a number field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue struct {
+	Typename string `json:"__typename"`
+	// Number as a float(8)
+	Number float64 `json:"number"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue) GetTypename() string {
+	return v.Typename
+}
+
+// GetNumber returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue.Number, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue) GetNumber() float64 {
+	return v.Number
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue includes the requested fields of the GraphQL type ProjectV2ItemFieldPullRequestValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a pull request field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue includes the requested fields of the GraphQL type ProjectV2ItemFieldRepositoryValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a repository field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue includes the requested fields of the GraphQL type ProjectV2ItemFieldReviewerValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a reviewers field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue includes the requested fields of the GraphQL type ProjectV2ItemFieldSingleSelectValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a single select field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue includes the requested fields of the GraphQL type ProjectV2ItemFieldTextValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a text field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue includes the requested fields of the GraphQL type ProjectV2ItemFieldUserValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a user field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue includes the requested fields of the GraphQL interface ProjectV2ItemFieldValue.
+//
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue
+// The GraphQL type's documentation follows.
+//
+// Project field values
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue(b []byte, v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2ItemFieldDateValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldIterationValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldLabelValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldMilestoneValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldNumberValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldPullRequestValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldRepositoryValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldReviewerValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldSingleSelectValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldTextValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldUserValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2ItemFieldValue.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue(v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue:
+		typename = "ProjectV2ItemFieldDateValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldDateValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue:
+		typename = "ProjectV2ItemFieldIterationValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldIterationValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue:
+		typename = "ProjectV2ItemFieldLabelValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldLabelValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue:
+		typename = "ProjectV2ItemFieldMilestoneValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldMilestoneValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue:
+		typename = "ProjectV2ItemFieldNumberValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue:
+		typename = "ProjectV2ItemFieldPullRequestValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldPullRequestValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue:
+		typename = "ProjectV2ItemFieldRepositoryValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldRepositoryValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue:
+		typename = "ProjectV2ItemFieldReviewerValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldReviewerValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue:
+		typename = "ProjectV2ItemFieldSingleSelectValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldSingleSelectValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue:
+		typename = "ProjectV2ItemFieldTextValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldTextValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue:
+		typename = "ProjectV2ItemFieldUserValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldUserValue
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldValue: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue includes the requested fields of the GraphQL type ProjectV2ItemFieldDateValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a date field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue includes the requested fields of the GraphQL type ProjectV2ItemFieldIterationValue.
+// The GraphQL type's documentation follows.
+//
+// The value of an iteration field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue includes the requested fields of the GraphQL type ProjectV2ItemFieldLabelValue.
+// The GraphQL type's documentation follows.
+//
+// The value of the labels field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue includes the requested fields of the GraphQL type ProjectV2ItemFieldMilestoneValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a milestone field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue includes the requested fields of the GraphQL type ProjectV2ItemFieldNumberValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a number field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue includes the requested fields of the GraphQL type ProjectV2ItemFieldPullRequestValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a pull request field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue includes the requested fields of the GraphQL type ProjectV2ItemFieldRepositoryValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a repository field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue includes the requested fields of the GraphQL type ProjectV2ItemFieldReviewerValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a reviewers field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue includes the requested fields of the GraphQL type ProjectV2ItemFieldSingleSelectValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a single select field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue struct {
+	Typename string `json:"__typename"`
+	// The name of the selected single select option.
+	Name string `json:"name"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue.Name, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue) GetName() string {
+	return v.Name
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue includes the requested fields of the GraphQL type ProjectV2ItemFieldTextValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a text field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue includes the requested fields of the GraphQL type ProjectV2ItemFieldUserValue.
+// The GraphQL type's documentation follows.
+//
+// The value of a user field in a Project item.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue includes the requested fields of the GraphQL interface ProjectV2ItemFieldValue.
+//
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue
+// The GraphQL type's documentation follows.
+//
+// Project field values
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue(b []byte, v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2ItemFieldDateValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldIterationValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldLabelValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldMilestoneValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldNumberValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldPullRequestValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldRepositoryValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldReviewerValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldSingleSelectValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldTextValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2ItemFieldUserValue":
+		*v = new(getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2ItemFieldValue.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue(v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue:
+		typename = "ProjectV2ItemFieldDateValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldDateValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue:
+		typename = "ProjectV2ItemFieldIterationValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldIterationValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue:
+		typename = "ProjectV2ItemFieldLabelValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldLabelValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue:
+		typename = "ProjectV2ItemFieldMilestoneValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldMilestoneValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue:
+		typename = "ProjectV2ItemFieldNumberValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldNumberValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue:
+		typename = "ProjectV2ItemFieldPullRequestValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldPullRequestValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue:
+		typename = "ProjectV2ItemFieldRepositoryValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldRepositoryValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue:
+		typename = "ProjectV2ItemFieldReviewerValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldReviewerValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue:
+		typename = "ProjectV2ItemFieldSingleSelectValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue:
+		typename = "ProjectV2ItemFieldTextValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldTextValue
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue:
+		typename = "ProjectV2ItemFieldUserValue"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldUserValue
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldValue: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo struct {
+	// When paginating forwards, are there more items?
+	HasNextPage bool `json:"hasNextPage"`
+	// When paginating forwards, the cursor to continue.
+	EndCursor string `json:"endCursor"`
+}
+
+// GetHasNextPage returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo) GetHasNextPage() bool {
+	return v.HasNextPage
+}
+
+// GetEndCursor returns getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionPageInfo) GetEndCursor() string {
+	return v.EndCursor
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2Field includes the requested fields of the GraphQL type ProjectV2Field.
+// The GraphQL type's documentation follows.
+//
+// A field inside a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2Field struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2IterationProjectV2Field.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2Field) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration includes the requested fields of the GraphQL interface ProjectV2FieldConfiguration.
+//
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2Field
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField
+// The GraphQL type's documentation follows.
+//
+// Configurations for project fields.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2Field) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration(b []byte, v *getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2Field":
+		*v = new(getRepositoryProjectRepositoryProjectV2IterationProjectV2Field)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2IterationField":
+		*v = new(getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2SingleSelectField":
+		*v = new(getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2FieldConfiguration.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration(v *getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2IterationProjectV2Field:
+		typename = "ProjectV2Field"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2IterationProjectV2Field
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField:
+		typename = "ProjectV2IterationField"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField:
+		typename = "ProjectV2SingleSelectField"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2IterationProjectV2FieldConfiguration: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField includes the requested fields of the GraphQL type ProjectV2IterationField.
+// The GraphQL type's documentation follows.
+//
+// An iteration field inside a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField struct {
+	Typename string `json:"__typename"`
+	// The project field's name.
+	Name string `json:"name"`
+	// Iteration configuration settings
+	Configuration getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration `json:"configuration"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField.Name, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField) GetName() string {
+	return v.Name
+}
+
+// GetConfiguration returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField.Configuration, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField) GetConfiguration() getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration {
+	return v.Configuration
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration includes the requested fields of the GraphQL type ProjectV2IterationFieldConfiguration.
+// The GraphQL type's documentation follows.
+//
+// Iteration field configuration for a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration struct {
+	// The iteration's iterations
+	Iterations []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration `json:"iterations"`
+	// The iteration's completed iterations
+	CompletedIterations []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration `json:"completedIterations"`
+}
+
+// GetIterations returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration.Iterations, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration) GetIterations() []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration {
+	return v.Iterations
+}
+
+// GetCompletedIterations returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration.CompletedIterations, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration) GetCompletedIterations() []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration {
+	return v.CompletedIterations
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration includes the requested fields of the GraphQL type ProjectV2IterationFieldIteration.
+// The GraphQL type's documentation follows.
+//
+// Iteration field iteration settings for a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration struct {
+	// The iteration's ID.
+	Id string `json:"id"`
+	// The iteration's title.
+	Title string `json:"title"`
+	// The iteration's start date
+	StartDate string `json:"startDate"`
+	// The iteration's duration in days
+	Duration int `json:"duration"`
+}
+
+// GetId returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration.Id, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration) GetId() string {
+	return v.Id
+}
+
+// GetTitle returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration.Title, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration) GetTitle() string {
+	return v.Title
+}
+
+// GetStartDate returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration.StartDate, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration) GetStartDate() string {
+	return v.StartDate
+}
+
+// GetDuration returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration.Duration, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration) GetDuration() int {
+	return v.Duration
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration includes the requested fields of the GraphQL type ProjectV2IterationFieldIteration.
+// The GraphQL type's documentation follows.
+//
+// Iteration field iteration settings for a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration struct {
+	// The iteration's ID.
+	Id string `json:"id"`
+	// The iteration's title.
+	Title string `json:"title"`
+	// The iteration's start date
+	StartDate string `json:"startDate"`
+	// The iteration's duration in days
+	Duration int `json:"duration"`
+}
+
+// GetId returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration.Id, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration) GetId() string {
+	return v.Id
+}
+
+// GetTitle returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration.Title, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration) GetTitle() string {
+	return v.Title
+}
+
+// GetStartDate returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration.StartDate, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration) GetStartDate() string {
+	return v.StartDate
+}
+
+// GetDuration returns getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration.Duration, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration) GetDuration() int {
+	return v.Duration
+}
+
+// getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField includes the requested fields of the GraphQL type ProjectV2SingleSelectField.
+// The GraphQL type's documentation follows.
+//
+// A single select field inside a project.
+type getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2IterationProjectV2SingleSelectField) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2Field includes the requested fields of the GraphQL type ProjectV2Field.
+// The GraphQL type's documentation follows.
+//
+// A field inside a project.
+type getRepositoryProjectRepositoryProjectV2StatusProjectV2Field struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2StatusProjectV2Field.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2Field) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration includes the requested fields of the GraphQL interface ProjectV2FieldConfiguration.
+//
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration is implemented by the following types:
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2Field
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField
+// The GraphQL type's documentation follows.
+//
+// Configurations for project fields.
+type getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration interface {
+	implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+}
+
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2Field) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration() {
+}
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField) implementsGraphQLInterfacegetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration() {
+}
+
+func __unmarshalgetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration(b []byte, v *getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "ProjectV2Field":
+		*v = new(getRepositoryProjectRepositoryProjectV2StatusProjectV2Field)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2IterationField":
+		*v = new(getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField)
+		return json.Unmarshal(b, *v)
+	case "ProjectV2SingleSelectField":
+		*v = new(getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing ProjectV2FieldConfiguration.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration(v *getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getRepositoryProjectRepositoryProjectV2StatusProjectV2Field:
+		typename = "ProjectV2Field"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2StatusProjectV2Field
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField:
+		typename = "ProjectV2IterationField"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField
+		}{typename, v}
+		return json.Marshal(result)
+	case *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField:
+		typename = "ProjectV2SingleSelectField"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getRepositoryProjectRepositoryProjectV2StatusProjectV2FieldConfiguration: "%T"`, v)
+	}
+}
+
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField includes the requested fields of the GraphQL type ProjectV2IterationField.
+// The GraphQL type's documentation follows.
+//
+// An iteration field inside a project.
+type getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField struct {
+	Typename string `json:"__typename"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2IterationField) GetTypename() string {
+	return v.Typename
+}
+
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField includes the requested fields of the GraphQL type ProjectV2SingleSelectField.
+// The GraphQL type's documentation follows.
+//
+// A single select field inside a project.
+type getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField struct {
+	Typename string `json:"__typename"`
+	// The project field's name.
+	Name string `json:"name"`
+	// Options for the single select field
+	Options []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption `json:"options"`
+}
+
+// GetTypename returns getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField.Typename, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField.Name, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField) GetName() string {
+	return v.Name
+}
+
+// GetOptions returns getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField.Options, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField) GetOptions() []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption {
+	return v.Options
+}
+
+// getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption includes the requested fields of the GraphQL type ProjectV2SingleSelectFieldOption.
+// The GraphQL type's documentation follows.
+//
+// Single select field option for a configuration for a project.
+type getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption struct {
+	// The option's name.
+	Name string `json:"name"`
+}
+
+// GetName returns getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption.Name, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption) GetName() string {
+	return v.Name
+}
+
+// getRepositoryProjectResponse is returned by getRepositoryProject on success.
+type getRepositoryProjectResponse struct {
+	// Lookup a given repository by the owner and repository name.
+	Repository getRepositoryProjectRepository `json:"repository"`
+}
+
+// GetRepository returns getRepositoryProjectResponse.Repository, and is useful for accessing the field via an interface.
+func (v *getRepositoryProjectResponse) GetRepository() getRepositoryProjectRepository {
+	return v.Repository
+}
+
 // The query or mutation executed by getOrganizationProject.
 const getOrganizationProject_Operation = `
 query getOrganizationProject ($organization_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
@@ -2557,6 +4999,127 @@ func getOrganizationProject(
 	var err_ error
 
 	var data_ getOrganizationProjectResponse
+	resp_ := &graphql.Response{Data: &data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return &data_, err_
+}
+
+// The query or mutation executed by getRepositoryProject.
+const getRepositoryProject_Operation = `
+query getRepositoryProject ($repo_owner: String!, $repo_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
+	repository(owner: $repo_owner, name: $repo_name) {
+		projectV2(number: $project_number) {
+			id
+			title
+			status: field(name: "Status") {
+				__typename
+				... on ProjectV2SingleSelectField {
+					name
+					options {
+						name
+					}
+				}
+			}
+			iteration: field(name: "Iteration") {
+				__typename
+				... on ProjectV2IterationField {
+					name
+					configuration {
+						iterations {
+							id
+							title
+							startDate
+							duration
+						}
+						completedIterations {
+							id
+							title
+							startDate
+							duration
+						}
+					}
+				}
+			}
+			items(first: 100, after: $cursor) {
+				pageInfo {
+					hasNextPage
+					endCursor
+				}
+				nodes {
+					id
+					status: fieldValueByName(name: "Status") {
+						__typename
+						... on ProjectV2ItemFieldSingleSelectValue {
+							name
+						}
+					}
+					effort: fieldValueByName(name: "Effort") {
+						__typename
+						... on ProjectV2ItemFieldNumberValue {
+							number
+						}
+					}
+					remaining: fieldValueByName(name: "RemainingHours") {
+						__typename
+						... on ProjectV2ItemFieldNumberValue {
+							number
+						}
+					}
+					iteration: fieldValueByName(name: "Iteration") {
+						__typename
+						... on ProjectV2ItemFieldIterationValue {
+							iterationId
+						}
+					}
+					content {
+						__typename
+						... on Issue {
+							title
+							createdAt
+							closedAt
+							labels(first: $labels_per_issue_count) {
+								nodes {
+									name
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+`
+
+func getRepositoryProject(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	repo_owner string,
+	repo_name string,
+	project_number int,
+	labels_per_issue_count int,
+	cursor string,
+) (*getRepositoryProjectResponse, error) {
+	req_ := &graphql.Request{
+		OpName: "getRepositoryProject",
+		Query:  getRepositoryProject_Operation,
+		Variables: &__getRepositoryProjectInput{
+			Repo_owner:             repo_owner,
+			Repo_name:              repo_name,
+			Project_number:         project_number,
+			Labels_per_issue_count: labels_per_issue_count,
+			Cursor:                 cursor,
+		},
+	}
+	var err_ error
+
+	var data_ getRepositoryProjectResponse
 	resp_ := &graphql.Response{Data: &data_}
 
 	err_ = client_.MakeRequest(

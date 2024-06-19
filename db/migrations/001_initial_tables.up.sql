@@ -25,6 +25,7 @@ CREATE TABLE work_item_history (
   remaining_hours   integer NULL,
   effort            integer NULL,
   iteration_id      INT  NULL REFERENCES iteration (id),
+  project_id        INT  NOT NULL REFERENCES project (id),
   UNIQUE(change_date, gh_id)
 );
 

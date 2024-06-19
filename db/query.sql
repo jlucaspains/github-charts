@@ -4,17 +4,17 @@ join iteration on work_item.iteration_id = iteration.id
 WHERE iteration.name = $1;
 
 -- name: UpsertWorkItem :one
-INSERT INTO work_item_history (change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO work_item_history (change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id, project_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT(change_date, gh_id) 
 DO UPDATE SET
-  iteration_id = EXCLUDED.iteration_id,
   "name" = EXCLUDED.name,
   "status" = EXCLUDED.status,
   priority = EXCLUDED.priority,
   remaining_hours = EXCLUDED.remaining_hours,
   effort = EXCLUDED.effort,
-  iteration_id = EXCLUDED.iteration_id
+  iteration_id = EXCLUDED.iteration_id,
+  project_id = EXCLUDED.project_id
 RETURNING *;
 
 -- name: UpsertProject :one

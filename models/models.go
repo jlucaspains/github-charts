@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -56,4 +58,42 @@ type BurnupItem struct {
 	Status     string    `json:"status"`
 	ProjectDay time.Time `json:"projectDay"`
 	Qty        float64   `json:"qty"`
+}
+
+type JobConfigItem struct {
+	OrgName   string
+	RepoOwner string
+	RepoName  string
+	Project   string
+	Token     string
+}
+
+func (j *JobConfigItem) GetUniqueName() string {
+	if j.OrgName != "" {
+		return fmt.Sprintf("%s/%s", j.OrgName, j.Project)
+	} else {
+		return fmt.Sprintf("%s/%s/%s", j.RepoOwner, j.RepoName, j.Project)
+	}
+}
+
+func (j *JobConfigItem) Validate() error {
+	errors := []string{}
+
+	if j.OrgName == "" && j.RepoOwner == "" && j.RepoName == "" {
+		errors = append(errors, "org or repo information is required")
+	}
+
+	if j.Project == "" {
+		errors = append(errors, "project is required")
+	}
+
+	if j.Token == "" {
+		errors = append(errors, "token is required")
+	}
+
+	if len(errors) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("invalid configuration: %v", strings.Join(errors, ", "))
 }

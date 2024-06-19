@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -16,6 +16,7 @@ import (
 	"github.com/jlucaspains/github-charts/handlers"
 	"github.com/jlucaspains/github-charts/jobs"
 	"github.com/jlucaspains/github-charts/midlewares"
+	"github.com/jlucaspains/github-charts/models"
 	"github.com/joho/godotenv"
 )
 
@@ -56,29 +57,62 @@ func startDataPullJob(queries *db.Queries) func() {
 		log.Fatalf("must set DATA_PULL_JOB_CRON=<CRON>")
 	}
 
-	key := os.Getenv("GH_TOKEN")
-	if key == "" {
-		log.Fatalf("must set GITHUB_TOKEN=<github token>")
-	}
+	projectConfigs := []models.JobConfigItem{}
+	for i := 1; true; i++ {
+		rawUrl, ok := os.LookupEnv(fmt.Sprintf("GH_PROJECT_%d", i))
+		if !ok {
+			break
+		}
+		config, err := parseProjectConfig(rawUrl)
 
-	orgName := os.Getenv("GH_ORG_NAME")
-	if orgName == "" {
-		log.Fatalf("must set ORG_NAME=<organization name>")
-	}
+		if err != nil {
+			slog.Warn("Invalid project configuration", "error", err)
+			continue
+		}
 
-	projectIdConfig := os.Getenv("PROJECT_ID")
-	projectId, err := strconv.Atoi(projectIdConfig)
-
-	if err != nil || projectId <= 0 {
-		log.Fatalf("must set PROJECT_ID=<project id>")
+		projectConfigs = append(projectConfigs, config)
 	}
 
 	dataPullJob := &jobs.DataPullJob{}
-	dataPullJob.Init(jobCron, queries, int(projectId), key, orgName)
-
+	dataPullJob.Init(jobCron, queries, projectConfigs)
 	dataPullJob.Start()
 
 	return dataPullJob.Stop
+}
+
+func parseProjectConfig(rawUrl string) (models.JobConfigItem, error) {
+	result := models.JobConfigItem{}
+
+	// break string using format key=value separated by spaces
+	parts := strings.Split(rawUrl, " ")
+
+	for _, part := range parts {
+		keyValue := strings.Split(part, "=")
+
+		if len(keyValue) != 2 {
+			continue
+		}
+
+		key := keyValue[0]
+		value := keyValue[1]
+
+		switch key {
+		case "project":
+			result.Project = value
+		case "org_name":
+			result.OrgName = value
+		case "repo_owner":
+			result.RepoOwner = value
+		case "repo_name":
+			result.RepoName = value
+		case "token":
+			result.Token = value
+		}
+	}
+
+	err := result.Validate()
+
+	return result, err
 }
 
 func getAllowedOrigins() string {
