@@ -1,72 +1,68 @@
-query getOrganizationProject($organization_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
-  organization(login: $organization_name) {
-    projectV2(number: $project_number) {
+fragment ProjectFields on ProjectV2 {
+  id
+  title
+  status: field(name: "Status") {
+    ... on ProjectV2SingleSelectField {
+      name
+      options {
+        name
+      }
+    }
+  }
+  iteration: field(name: "Iteration") {
+    ... on ProjectV2IterationField {
+        name
+        configuration {
+          iterations {
+            id
+            title
+            startDate
+            duration
+          }
+          completedIterations {
+            id
+            title
+            startDate
+            duration
+          }
+        }
+      }
+  }
+  items(first: 100, after: $cursor) {
+    pageInfo {
+        hasNextPage
+        endCursor
+    }
+    nodes {
       id
-      title
-      status: field(name: "Status") {
-        ... on ProjectV2SingleSelectField {
+      status: fieldValueByName(name: "Status") {
+        ... on ProjectV2ItemFieldSingleSelectValue {
           name
-          options {
-            name
-          }
         }
       }
-      iteration: field(name: "Iteration") {
-        ... on ProjectV2IterationField {
-            name
-            configuration {
-              iterations {
-                id
-                title
-                startDate
-                duration
-              }
-              completedIterations {
-                id
-                title
-                startDate
-                duration
-              }
-            }
-          }
-      }
-      items(first: 100, after: $cursor) {
-        pageInfo {
-            hasNextPage
-            endCursor
+      effort: fieldValueByName(name: "Effort") {
+        ... on ProjectV2ItemFieldNumberValue {
+          number
         }
-        nodes {
-          id
-          status: fieldValueByName(name: "Status") {
-            ... on ProjectV2ItemFieldSingleSelectValue {
+      }
+      remaining: fieldValueByName(name: "RemainingHours") {
+        ... on ProjectV2ItemFieldNumberValue {
+          number
+        }
+      }
+      iteration: fieldValueByName(name: "Iteration") {
+        ... on ProjectV2ItemFieldIterationValue {
+          iterationId
+        }
+      }
+      content {
+        ...on Issue {
+          title
+          createdAt
+          closedAt
+          labels(first: $labels_per_issue_count) {
+            nodes {
               name
-            }
-          }
-          effort: fieldValueByName(name: "Effort") {
-            ... on ProjectV2ItemFieldNumberValue {
-              number
-            }
-          }
-          remaining: fieldValueByName(name: "RemainingHours") {
-            ... on ProjectV2ItemFieldNumberValue {
-              number
-            }
-          }
-          iteration: fieldValueByName(name: "Iteration") {
-            ... on ProjectV2ItemFieldIterationValue {
-              iterationId
-            }
-          }
-          content {
-            ...on Issue {
-              title
-              createdAt
-              closedAt
-              labels(first: $labels_per_issue_count) {
-                nodes {
-                  name
-                }
-              }
             }
           }
         }
@@ -75,79 +71,18 @@ query getOrganizationProject($organization_name: String!, $project_number: Int!,
   }
 }
 
+query getOrganizationProject($organization_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
+  organization(login: $organization_name) {
+    projectV2(number: $project_number) {
+      ...ProjectFields
+    }
+  }
+}
+
 query getRepositoryProject($repo_owner: String!, $repo_name: String!, $project_number: Int!, $labels_per_issue_count: Int!, $cursor: String) {
   repository(owner: $repo_owner, name: $repo_name) {
     projectV2(number: $project_number) {
-      id
-      title
-      status: field(name: "Status") {
-        ... on ProjectV2SingleSelectField {
-          name
-          options {
-            name
-          }
-        }
-      }
-      iteration: field(name: "Iteration") {
-        ... on ProjectV2IterationField {
-            name
-            configuration {
-              iterations {
-                id
-                title
-                startDate
-                duration
-              }
-              completedIterations {
-                id
-                title
-                startDate
-                duration
-              }
-            }
-          }
-      }
-      items(first: 100, after: $cursor) {
-        pageInfo {
-            hasNextPage
-            endCursor
-        }
-        nodes {
-          id
-          status: fieldValueByName(name: "Status") {
-            ... on ProjectV2ItemFieldSingleSelectValue {
-              name
-            }
-          }
-          effort: fieldValueByName(name: "Effort") {
-            ... on ProjectV2ItemFieldNumberValue {
-              number
-            }
-          }
-          remaining: fieldValueByName(name: "RemainingHours") {
-            ... on ProjectV2ItemFieldNumberValue {
-              number
-            }
-          }
-          iteration: fieldValueByName(name: "Iteration") {
-            ... on ProjectV2ItemFieldIterationValue {
-              iterationId
-            }
-          }
-          content {
-            ...on Issue {
-              title
-              createdAt
-              closedAt
-              labels(first: $labels_per_issue_count) {
-                nodes {
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
+      ...ProjectFields
     }
   }
 }

@@ -11,9 +11,8 @@ import (
 )
 
 func TestInitOrg(t *testing.T) {
-	dataPullJob := &DataPullJob{}
 	querier := &MockQuerier{}
-	err := dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, err := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -32,9 +31,8 @@ func TestInitOrg(t *testing.T) {
 }
 
 func TestInitRepo(t *testing.T) {
-	dataPullJob := &DataPullJob{}
 	querier := &MockQuerier{}
-	err := dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, err := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -54,9 +52,8 @@ func TestInitRepo(t *testing.T) {
 }
 
 func TestInitInvalidCron(t *testing.T) {
-	dataPullJob := &DataPullJob{}
 	querier := &MockQuerier{}
-	err := dataPullJob.Init("*", querier, []models.JobConfigItem{
+	dataPullJob, err := NewDataPullJob("*", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -66,14 +63,12 @@ func TestInitInvalidCron(t *testing.T) {
 	})
 
 	assert.Error(t, err, "invalid cron expression")
-	assert.False(t, dataPullJob.running)
+	assert.Nil(t, dataPullJob)
 }
 
 func TestStart(t *testing.T) {
-	dataPullJob := &DataPullJob{}
 	querier := &MockQuerier{}
-
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -127,8 +122,7 @@ func (m mockGraphqlRepoClient) MakeRequest(
 
 func TestExecuteWillInsertOrgProject(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -139,21 +133,23 @@ func TestExecuteWillInsertOrgProject(t *testing.T) {
 		result: getOrganizationProjectResponse{
 			Organization: getOrganizationProjectOrganization{
 				ProjectV2: getOrganizationProjectOrganizationProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField{
-						Name:    "Status",
-						Options: []getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
-					},
-					Iteration: &getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations:          []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
-							CompletedIterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name:    "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
 						},
-					},
-					Items: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations:          []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
+						},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -170,8 +166,7 @@ func TestExecuteWillInsertOrgProject(t *testing.T) {
 
 func TestExecuteWillInsertRepoProject(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -183,21 +178,24 @@ func TestExecuteWillInsertRepoProject(t *testing.T) {
 		result: getRepositoryProjectResponse{
 			Repository: getRepositoryProjectRepository{
 				ProjectV2: getRepositoryProjectRepositoryProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField{
-						Name:    "Status",
-						Options: []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
-					},
-					Iteration: &getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations:          []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
-							CompletedIterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+					ProjectFields: ProjectFields{
+
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name:    "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
 						},
-					},
-					Items: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations:          []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
+						},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -214,8 +212,7 @@ func TestExecuteWillInsertRepoProject(t *testing.T) {
 
 func TestExecuteWillInsertOrgCategories(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -226,28 +223,30 @@ func TestExecuteWillInsertOrgCategories(t *testing.T) {
 		result: getOrganizationProjectResponse{
 			Organization: getOrganizationProjectOrganization{
 				ProjectV2: getOrganizationProjectOrganizationProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField{
-						Name: "Status",
-						Options: []getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
-							{
-								Name: "New",
-							},
-							{
-								Name: "Done",
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name: "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
+								{
+									Name: "New",
+								},
+								{
+									Name: "Done",
+								},
 							},
 						},
-					},
-					Iteration: &getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations:          []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
-							CompletedIterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations:          []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
 						},
-					},
-					Items: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -264,8 +263,7 @@ func TestExecuteWillInsertOrgCategories(t *testing.T) {
 
 func TestExecuteWillInsertRepoCategories(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -277,28 +275,30 @@ func TestExecuteWillInsertRepoCategories(t *testing.T) {
 		result: getRepositoryProjectResponse{
 			Repository: getRepositoryProjectRepository{
 				ProjectV2: getRepositoryProjectRepositoryProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField{
-						Name: "Status",
-						Options: []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
-							{
-								Name: "New",
-							},
-							{
-								Name: "Done",
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name: "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
+								{
+									Name: "New",
+								},
+								{
+									Name: "Done",
+								},
 							},
 						},
-					},
-					Iteration: &getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations:          []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
-							CompletedIterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations:          []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{},
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
 						},
-					},
-					Items: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -315,8 +315,7 @@ func TestExecuteWillInsertRepoCategories(t *testing.T) {
 
 func TestExecuteWillInsertOrgIterations(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -327,35 +326,37 @@ func TestExecuteWillInsertOrgIterations(t *testing.T) {
 		result: getOrganizationProjectResponse{
 			Organization: getOrganizationProjectOrganization{
 				ProjectV2: getOrganizationProjectOrganizationProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField{
-						Name:    "Status",
-						Options: []getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
-					},
-					Iteration: &getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
-								{
-									Id:        "2",
-									Title:     "Iteration 2",
-									StartDate: "2024-01-08",
-									Duration:  7,
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name:    "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
+						},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "2",
+										Title:     "Iteration 2",
+										StartDate: "2024-01-08",
+										Duration:  7,
+									},
 								},
-							},
-							CompletedIterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{
-								{
-									Id:        "1",
-									Title:     "Iteration 1",
-									StartDate: "2024-01-01",
-									Duration:  7,
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "1",
+										Title:     "Iteration 1",
+										StartDate: "2024-01-01",
+										Duration:  7,
+									},
 								},
 							},
 						},
-					},
-					Items: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -379,8 +380,7 @@ func TestExecuteWillInsertOrgIterations(t *testing.T) {
 
 func TestExecuteWillInsertRepoIterations(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -392,35 +392,37 @@ func TestExecuteWillInsertRepoIterations(t *testing.T) {
 		result: getRepositoryProjectResponse{
 			Repository: getRepositoryProjectRepository{
 				ProjectV2: getRepositoryProjectRepositoryProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField{
-						Name:    "Status",
-						Options: []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
-					},
-					Iteration: &getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
-								{
-									Id:        "2",
-									Title:     "Iteration 2",
-									StartDate: "2024-01-08",
-									Duration:  7,
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name:    "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{},
+						},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "2",
+										Title:     "Iteration 2",
+										StartDate: "2024-01-08",
+										Duration:  7,
+									},
 								},
-							},
-							CompletedIterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{
-								{
-									Id:        "1",
-									Title:     "Iteration 1",
-									StartDate: "2024-01-01",
-									Duration:  7,
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "1",
+										Title:     "Iteration 1",
+										StartDate: "2024-01-01",
+										Duration:  7,
+									},
 								},
 							},
 						},
-					},
-					Items: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{},
+						},
 					},
 				},
 			},
@@ -444,8 +446,7 @@ func TestExecuteWillInsertRepoIterations(t *testing.T) {
 
 func TestExecuteWillInsertOrgWorkItems(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			OrgName: "org",
 			Project: "1",
@@ -456,79 +457,83 @@ func TestExecuteWillInsertOrgWorkItems(t *testing.T) {
 		result: getOrganizationProjectResponse{
 			Organization: getOrganizationProjectOrganization{
 				ProjectV2: getOrganizationProjectOrganizationProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField{
-						Name: "Status",
-						Options: []getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
-							{
-								Name: "New",
-							},
-						},
-					},
-					Iteration: &getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name: "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
 								{
-									Id:        "2",
-									Title:     "Iteration 2",
-									StartDate: "2024-01-08",
-									Duration:  7,
-								},
-							},
-							CompletedIterations: []getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
-						},
-					},
-					Items: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{
-							{
-								Id: "1",
-								Status: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
 									Name: "New",
 								},
-								Effort: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
-									Number: 5,
+							},
+						},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "2",
+										Title:     "Iteration 2",
+										StartDate: "2024-01-08",
+										Duration:  7,
+									},
 								},
-								Remaining: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
-									Number: 16,
-								},
-								Iteration: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
-									IterationId: "2",
-								},
-								Content: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
-									Title:     "Issue 1",
-									CreatedAt: time.Now().AddDate(0, 0, -1),
-									Labels: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
-										Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
-											{
-												Name: "Label 1",
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
+						},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{
+								{
+									Id: "1",
+									Status: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
+										Name: "New",
+									},
+									Effort: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
+										Number: 5,
+									},
+									Remaining: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
+										Number: 16,
+									},
+									Iteration: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
+										IterationId: "2",
+									},
+									Content: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
+										Typename:  "Issue",
+										Title:     "Issue 1",
+										CreatedAt: time.Now().AddDate(0, 0, -1),
+										Labels: ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
+											Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
+												{
+													Name: "Label 1",
+												},
 											},
 										},
 									},
 								},
-							},
-							{
-								Id: "2",
-								Status: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
-									Name: "New",
-								},
-								Effort: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
-									Number: 3,
-								},
-								Remaining: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
-									Number: 8,
-								},
-								Iteration: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
-									IterationId: "2",
-								},
-								Content: &getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
-									Title:     "Issue 2",
-									CreatedAt: time.Now().AddDate(0, 0, -2),
-									Labels: getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
-										Nodes: []getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
-											{
-												Name: "Label 2",
+								{
+									Id: "2",
+									Status: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
+										Name: "New",
+									},
+									Effort: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
+										Number: 3,
+									},
+									Remaining: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
+										Number: 8,
+									},
+									Iteration: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
+										IterationId: "2",
+									},
+									Content: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
+										Typename:  "Issue",
+										Title:     "Issue 2",
+										CreatedAt: time.Now().AddDate(0, 0, -2),
+										Labels: ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
+											Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
+												{
+													Name: "Label 2",
+												},
 											},
 										},
 									},
@@ -564,8 +569,7 @@ func TestExecuteWillInsertOrgWorkItems(t *testing.T) {
 
 func TestExecuteWillInsertRepoWorkItems(t *testing.T) {
 	querier := &MockQuerier{}
-	dataPullJob := &DataPullJob{}
-	dataPullJob.Init("* * * * *", querier, []models.JobConfigItem{
+	dataPullJob, _ := NewDataPullJob("* * * * *", querier, []models.JobConfigItem{
 		{
 			RepoOwner: "org",
 			RepoName:  "repo",
@@ -577,79 +581,83 @@ func TestExecuteWillInsertRepoWorkItems(t *testing.T) {
 		result: getRepositoryProjectResponse{
 			Repository: getRepositoryProjectRepository{
 				ProjectV2: getRepositoryProjectRepositoryProjectV2{
-					Id:    "1",
-					Title: "Project 1",
-					Status: &getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField{
-						Name: "Status",
-						Options: []getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
-							{
-								Name: "New",
-							},
-						},
-					},
-					Iteration: &getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField{
-						Name: "Iteration",
-						Configuration: getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfiguration{
-							Iterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+					ProjectFields: ProjectFields{
+						Id:    "1",
+						Title: "Project 1",
+						Status: &ProjectFieldsStatusProjectV2SingleSelectField{
+							Name: "Status",
+							Options: []ProjectFieldsStatusProjectV2SingleSelectFieldOptionsProjectV2SingleSelectFieldOption{
 								{
-									Id:        "2",
-									Title:     "Iteration 2",
-									StartDate: "2024-01-08",
-									Duration:  7,
-								},
-							},
-							CompletedIterations: []getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
-						},
-					},
-					Items: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnection{
-						Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2Item{
-							{
-								Id: "1",
-								Status: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
 									Name: "New",
 								},
-								Effort: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
-									Number: 5,
+							},
+						},
+						Iteration: &ProjectFieldsIterationProjectV2IterationField{
+							Name: "Iteration",
+							Configuration: ProjectFieldsIterationProjectV2IterationFieldConfiguration{
+								Iterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationIterationsProjectV2IterationFieldIteration{
+									{
+										Id:        "2",
+										Title:     "Iteration 2",
+										StartDate: "2024-01-08",
+										Duration:  7,
+									},
 								},
-								Remaining: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
-									Number: 16,
-								},
-								Iteration: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
-									IterationId: "2",
-								},
-								Content: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
-									Title:     "Issue 1",
-									CreatedAt: time.Now().AddDate(0, 0, -1),
-									Labels: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
-										Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
-											{
-												Name: "Label 1",
+								CompletedIterations: []ProjectFieldsIterationProjectV2IterationFieldConfigurationCompletedIterationsProjectV2IterationFieldIteration{},
+							},
+						},
+						Items: ProjectFieldsItemsProjectV2ItemConnection{
+							Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2Item{
+								{
+									Id: "1",
+									Status: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
+										Name: "New",
+									},
+									Effort: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
+										Number: 5,
+									},
+									Remaining: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
+										Number: 16,
+									},
+									Iteration: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
+										IterationId: "2",
+									},
+									Content: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
+										Typename:  "Issue",
+										Title:     "Issue 1",
+										CreatedAt: time.Now().AddDate(0, 0, -1),
+										Labels: ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
+											Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
+												{
+													Name: "Label 1",
+												},
 											},
 										},
 									},
 								},
-							},
-							{
-								Id: "2",
-								Status: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
-									Name: "New",
-								},
-								Effort: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
-									Number: 3,
-								},
-								Remaining: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
-									Number: 8,
-								},
-								Iteration: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
-									IterationId: "2",
-								},
-								Content: &getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
-									Title:     "Issue 2",
-									CreatedAt: time.Now().AddDate(0, 0, -2),
-									Labels: getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
-										Nodes: []getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
-											{
-												Name: "Label 2",
+								{
+									Id: "2",
+									Status: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue{
+										Name: "New",
+									},
+									Effort: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue{
+										Number: 3,
+									},
+									Remaining: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue{
+										Number: 8,
+									},
+									Iteration: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue{
+										IterationId: "2",
+									},
+									Content: &ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue{
+										Typename:  "Issue",
+										Title:     "Issue 2",
+										CreatedAt: time.Now().AddDate(0, 0, -2),
+										Labels: ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnection{
+											Nodes: []ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssueLabelsLabelConnectionNodesLabel{
+												{
+													Name: "Label 2",
+												},
 											},
 										},
 									},

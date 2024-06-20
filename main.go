@@ -73,8 +73,7 @@ func startDataPullJob(queries *db.Queries) func() {
 		projectConfigs = append(projectConfigs, config)
 	}
 
-	dataPullJob := &jobs.DataPullJob{}
-	dataPullJob.Init(jobCron, queries, projectConfigs)
+	dataPullJob, _ := jobs.NewDataPullJob(jobCron, queries, projectConfigs)
 	dataPullJob.Start()
 
 	return dataPullJob.Stop

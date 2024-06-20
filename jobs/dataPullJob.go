@@ -35,12 +35,13 @@ func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.wrapped.RoundTrip(req)
 }
 
-func (c *DataPullJob) Init(schedule string, queries db.Querier, projects []models.JobConfigItem) error {
+func NewDataPullJob(schedule string, queries db.Querier, projects []models.JobConfigItem) (*DataPullJob, error) {
+	c := &DataPullJob{}
 	c.gron = gronx.New()
 
 	if schedule == "" || !c.gron.IsValid(schedule) {
 		slog.Error("A valid cron schedule is required in the format e.g.: * * * * *", "cron", schedule)
-		return fmt.Errorf("a valid cron schedule is required")
+		return nil, fmt.Errorf("a valid cron schedule is required")
 	}
 
 	c.cron = schedule
@@ -66,7 +67,7 @@ func (c *DataPullJob) Init(schedule string, queries db.Querier, projects []model
 		c.graphqlClients[project.GetUniqueName()] = graphqlClient
 	}
 
-	return nil
+	return c, nil
 }
 
 func (c *DataPullJob) Start() {
@@ -101,26 +102,31 @@ func (c *DataPullJob) tryExecute() {
 func (c *DataPullJob) execute() {
 	for _, project := range c.projects {
 		projectId, _ := strconv.Atoi(project.Project)
+		var projectFields *ProjectFields
+		var err error
 		if project.OrgName != "" {
 			slog.Info("Data pull job started", "orgName", project.OrgName, "projectId", projectId)
-			orgProject, err := getOrgProject(c.graphqlClients[project.GetUniqueName()], project.OrgName, projectId)
+			var orgProject *getOrganizationProjectResponse
+			orgProject, err = getOrgProject(c.graphqlClients[project.GetUniqueName()], project.OrgName, projectId)
 
-			if err != nil {
-				slog.Error("Error fetching project information", "error", err)
-			} else {
-				project := parseOrgProjectInformation(orgProject)
-				saveProjectInformation(project, c.queries)
+			if err == nil {
+				projectFields = &orgProject.Organization.ProjectV2.ProjectFields
 			}
 		} else {
 			slog.Info("Data pull job started", "repoOwner", project.RepoOwner, "repoName", project.RepoName, "projectId", projectId)
-			repoProject, err := getRepoProject(c.graphqlClients[project.GetUniqueName()], project.RepoOwner, project.RepoName, projectId)
+			var repoProject *getRepositoryProjectResponse
+			repoProject, err = getRepoProject(c.graphqlClients[project.GetUniqueName()], project.RepoOwner, project.RepoName, projectId)
 
-			if err != nil {
-				slog.Error("Error fetching project information", "error", err)
-			} else {
-				project := parseRepoProjectInformation(repoProject)
-				saveProjectInformation(project, c.queries)
+			if err == nil {
+				projectFields = &repoProject.Repository.ProjectV2.ProjectFields
 			}
+		}
+
+		if err == nil {
+			project := parseProjectInformation(projectFields)
+			saveProjectInformation(project, c.queries)
+		} else {
+			slog.Error("Error fetching project information", "error", err)
 		}
 	}
 }
@@ -241,21 +247,21 @@ func getRepoProject(graphqlClient graphql.Client, repoOwner string, repoName str
 	return repoProject, nil
 }
 
-func parseOrgProjectInformation(orgProject *getOrganizationProjectResponse) *models.Project {
+func parseProjectInformation(projectFields *ProjectFields) *models.Project {
 	project := &models.Project{
-		Id:         orgProject.Organization.ProjectV2.Id,
-		Title:      orgProject.Organization.ProjectV2.Title,
+		Id:         projectFields.Id,
+		Title:      projectFields.Title,
 		Iterations: []models.Iteration{},
 		Statuses:   []string{},
 	}
 
-	status := orgProject.Organization.ProjectV2.Status.(*getOrganizationProjectOrganizationProjectV2StatusProjectV2SingleSelectField)
+	status := projectFields.Status.(*ProjectFieldsStatusProjectV2SingleSelectField)
 
 	for _, option := range status.Options {
 		project.Statuses = append(project.Statuses, option.Name)
 	}
 
-	iteration := orgProject.Organization.ProjectV2.Iteration.(*getOrganizationProjectOrganizationProjectV2IterationProjectV2IterationField)
+	iteration := projectFields.Iteration.(*ProjectFieldsIterationProjectV2IterationField)
 	for _, completedIteration := range iteration.Configuration.CompletedIterations {
 		startDate, _ := time.Parse("2006-01-02", completedIteration.StartDate)
 		project.Iterations = append(project.Iterations, models.Iteration{
@@ -275,101 +281,29 @@ func parseOrgProjectInformation(orgProject *getOrganizationProjectResponse) *mod
 		})
 	}
 
-	for _, item := range orgProject.Organization.ProjectV2.Items.Nodes {
+	for _, item := range projectFields.Items.Nodes {
 		if item.Content.GetTypename() != "Issue" {
 			continue
 		}
 
-		content := item.Content.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
+		content := item.Content.(*ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
 		issue := models.Issue{
 			Id:        item.Id,
 			Title:     content.Title,
 			CreatedAt: content.CreatedAt,
 			ClosedAt:  content.ClosedAt,
-			Status:    item.Status.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue).Name,
+			Status:    item.Status.(*ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue).Name,
 		}
 		if item.Effort != nil {
-			issue.Effort = item.Effort.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
+			issue.Effort = item.Effort.(*ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
 		}
 
 		if item.Remaining != nil {
-			issue.RemainingHours = item.Remaining.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue).Number
+			issue.RemainingHours = item.Remaining.(*ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue).Number
 		}
 
 		if item.Iteration != nil {
-			iteration := item.Iteration.(*getOrganizationProjectOrganizationProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
-
-			issue.IterationId = iteration.IterationId
-		}
-
-		// extract labels from isues
-		for _, label := range content.Labels.Nodes {
-			issue.Labels = append(issue.Labels, label.Name)
-		}
-
-		project.Issues = append(project.Issues, issue)
-	}
-
-	return project
-}
-
-func parseRepoProjectInformation(orgProject *getRepositoryProjectResponse) *models.Project {
-	project := &models.Project{
-		Id:         orgProject.Repository.ProjectV2.Id,
-		Title:      orgProject.Repository.ProjectV2.Title,
-		Iterations: []models.Iteration{},
-		Statuses:   []string{},
-	}
-
-	status := orgProject.Repository.ProjectV2.Status.(*getRepositoryProjectRepositoryProjectV2StatusProjectV2SingleSelectField)
-
-	for _, option := range status.Options {
-		project.Statuses = append(project.Statuses, option.Name)
-	}
-
-	iteration := orgProject.Repository.ProjectV2.Iteration.(*getRepositoryProjectRepositoryProjectV2IterationProjectV2IterationField)
-	for _, completedIteration := range iteration.Configuration.CompletedIterations {
-		startDate, _ := time.Parse("2006-01-02", completedIteration.StartDate)
-		project.Iterations = append(project.Iterations, models.Iteration{
-			Id:        completedIteration.Id,
-			Title:     completedIteration.Title,
-			StartDate: startDate,
-			EndDate:   startDate.Add(time.Duration(completedIteration.Duration) * 24 * time.Hour),
-		})
-	}
-	for _, futureIteration := range iteration.Configuration.Iterations {
-		startDate, _ := time.Parse("2006-01-02", futureIteration.StartDate)
-		project.Iterations = append(project.Iterations, models.Iteration{
-			Id:        futureIteration.Id,
-			Title:     futureIteration.Title,
-			StartDate: startDate,
-			EndDate:   startDate.Add(time.Duration(futureIteration.Duration) * 24 * time.Hour),
-		})
-	}
-
-	for _, item := range orgProject.Repository.ProjectV2.Items.Nodes {
-		if item.Content.GetTypename() != "Issue" {
-			continue
-		}
-
-		content := item.Content.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemContentIssue)
-		issue := models.Issue{
-			Id:        item.Id,
-			Title:     content.Title,
-			CreatedAt: content.CreatedAt,
-			ClosedAt:  content.ClosedAt,
-			Status:    item.Status.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemStatusProjectV2ItemFieldSingleSelectValue).Name,
-		}
-		if item.Effort != nil {
-			issue.Effort = item.Effort.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemEffortProjectV2ItemFieldNumberValue).Number
-		}
-
-		if item.Remaining != nil {
-			issue.RemainingHours = item.Remaining.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemRemainingProjectV2ItemFieldNumberValue).Number
-		}
-
-		if item.Iteration != nil {
-			iteration := item.Iteration.(*getRepositoryProjectRepositoryProjectV2ItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
+			iteration := item.Iteration.(*ProjectFieldsItemsProjectV2ItemConnectionNodesProjectV2ItemIterationProjectV2ItemFieldIterationValue)
 
 			issue.IterationId = iteration.IterationId
 		}
