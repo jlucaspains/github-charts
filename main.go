@@ -183,6 +183,8 @@ func initDB(ctx context.Context) (*db.Queries, func()) {
 		log.Fatal("must set DB_CONNECTION=<connection string>")
 	}
 
+	db.Init(dbConnection)
+
 	conn, err := pgxpool.New(ctx, dbConnection)
 	if err != nil {
 		log.Fatal(err)

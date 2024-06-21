@@ -52,7 +52,7 @@ func NewDataPullJob(schedule string, queries db.Querier, projects []models.JobCo
 	slog.Info("Init DataPullJob job")
 
 	for index, item := range c.projects {
-		slog.Info("Project configuration", "index", index, "item", item)
+		slog.Info("Project configuration", "index", index, "repoOwner", item.RepoOwner, "repoName", item.RepoName, "orgName", item.OrgName, "projectId", item.Project)
 	}
 
 	c.graphqlClients = make(map[string]graphql.Client)

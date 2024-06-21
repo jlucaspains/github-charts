@@ -35,6 +35,7 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 WORKDIR /app
 COPY --from=builder /app/github-charts .
+COPY --from=builder /app/db ./db
 COPY --from=svelteBuiler /app/dist/ ./public/
 USER appuser:appuser
 EXPOSE 8000

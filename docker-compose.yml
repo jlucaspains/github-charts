@@ -9,9 +9,7 @@ services:
       ENV: "local"
       WEB_PORT: ":8000"
       DB_CONNECTION: "${DB_CONNECTION}"
-      GH_ORG_NAME: "hitachisolutionsamerica"
-      GH_TOKEN: "${GH_TOKEN}"
-      PROJECT_ID: "${PROJECT_ID}"
+      GH_PROJECT_1: "${GH_PROJECT_1}"
       DATA_PULL_JOB_CRON: "*/2 * * * *"
     ports:
       - "8000:8000"
