@@ -54,7 +54,7 @@ body {
 }
 
 header {
-  width: 100%;
+  width: calc(100% - 1em);
   background: rgb(31 41 55);
   text-align: center;
   padding: .5em;
