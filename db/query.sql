@@ -1,6 +1,7 @@
 -- name: GetWorkItemsForIteration :many
-SELECT * FROM work_item_history
-join iteration on work_item.iteration_id = iteration.id
+SELECT id, change_date, gh_id, name, status, priority, remaining_hours, effort, iteration_id, project_id
+FROM work_item_history
+JOIN iteration on work_item.iteration_id = iteration.id
 WHERE iteration.name = $1;
 
 -- name: UpsertWorkItem :one
@@ -44,53 +45,55 @@ DO UPDATE SET
 RETURNING *;
 
 -- name: GetIterations :many
-SELECT * FROM iteration where project_id = $1;
+SELECT id, gh_id, name, start_date, end_date, project_id 
+FROM iteration WHERE project_id = $1;
 
 -- name: GetProjects :many
-SELECT * FROM project;
+SELECT id, gh_id, name
+FROM project;
 
 -- name: GetIterationBurndown :many
-with starting_effort as (
- select sum(effort) as effort
- from work_item_history
- where change_date = (select min(change_date) from work_item_history where iteration_id = 1)
-   and iteration_id = $1)
+WITH starting_effort AS (
+ SELECT sum(effort) AS effort
+ FROM work_item_history
+ WHERE change_date = (SELECT min(change_date) FROM work_item_history WHERE iteration_id = 1)
+   AND iteration_id = $1)
 
-select iteration_day
+SELECT iteration_day
      , cast(sum(case when status <> 'Done' then work_item_history.effort else 0 end) as decimal) as remaining
      , cast(seffort.effort::decimal - (seffort.effort::decimal / total_days.total * row_number() over (order by iteration_day)) as decimal) as ideal
-  from iteration
-       join lateral (SELECT date_trunc('day', dd):: date as iteration_day
+  FROM iteration
+       JOIN lateral (SELECT date_trunc('day', dd):: date as iteration_day
                        FROM generate_series
                                ( iteration.start_date::timestamp 
                                , iteration.end_date::timestamp
                                , '1 day'::interval) dd
-                      where EXTRACT(ISODOW FROM dd) not IN (6, 7)) dates on true
-       join lateral (SELECT count(*)::decimal as total
+                      WHERE EXTRACT(ISODOW FROM dd) not IN (6, 7)) dates on true
+       JOIN lateral (SELECT count(*)::decimal as total
                        FROM generate_series
                                ( iteration.start_date::timestamp 
                                , iteration.end_date::timestamp
                                , '1 day'::interval) dd
-                      where EXTRACT(ISODOW FROM dd) not IN (6, 7)) total_days on true
-        join lateral (select effort from starting_effort) seffort on true
-       left join work_item_history on work_item_history.change_date = dates.iteration_day
- where iteration.id = $1
- group by iteration_day, total_days.total, seffort.effort
-order by iteration_day;
+                      WHERE EXTRACT(ISODOW FROM dd) not IN (6, 7)) total_days on true
+        JOIN lateral (SELECT effort from starting_effort) seffort on true
+       LEFT JOIN work_item_history on work_item_history.change_date = dates.iteration_day
+ WHERE iteration.id = $1
+ GROUP BY iteration_day, total_days.total, seffort.effort
+ORDER BY iteration_day;
 
 
 -- name: GetProjectBurnup :many
-select statuses.name as status
+SELECT statuses.name as status
      , project_day
      , sum(work_item_history.effort)::decimal as qty
-  from work_item_status statuses
-       join lateral (SELECT date_trunc('day', dd):: date as project_day
+  FROM work_item_status statuses
+       JOIN lateral (SELECT date_trunc('day', dd):: date as project_day
                        FROM generate_series
                                ( $2::timestamp 
                                , now()::timestamp
                                , '1 day'::interval) dd) dates on true
-        left join work_item_history on work_item_history.change_date = dates.project_day and work_item_history.status = statuses.name
-        left join iteration on work_item_history.iteration_id = iteration.id
- where (iteration.project_id = $1 or iteration.project_id is null)
- group by statuses.name, dates.project_day
-order by statuses.name, dates.project_day;
+        LEFT JOIN work_item_history on work_item_history.change_date = dates.project_day and work_item_history.status = statuses.name
+        LEFT JOIN iteration on work_item_history.iteration_id = iteration.id
+ WHERE (iteration.project_id = $1 or iteration.project_id is null)
+ GROUP BY statuses.name, dates.project_day
+ORDER BY statuses.name, dates.project_day;

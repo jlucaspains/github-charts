@@ -29,7 +29,7 @@ RUN npm install --ignore-scripts
 RUN echo "VITE_API_BASE_PATH=/api" > .env
 RUN npm run build
 
-FROM scratch as runner
+FROM scratch AS runner
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
