@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.1",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "@types/node": "^20.14.8",
     "svelte": "^4.2.12",
     "vite": "^5.2.0"
   },

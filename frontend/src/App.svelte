@@ -43,7 +43,7 @@
       </div>
       <div class="card col">
         {#key iteration}
-          <Burndown {iteration} />
+          <Burndown {project} {iteration} />
         {/key}
       </div>
     </div>

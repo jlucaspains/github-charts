@@ -16,6 +16,11 @@
   /**
    * @type {string}
    */
+   export let project = null;
+
+  /**
+   * @type {string}
+   */
    export let iteration = null;
 
   /**
@@ -68,7 +73,7 @@
       console.log(iteration);
 
       const response = await fetch(
-        `${basePath}/projects/1/iterations/${iteration}/burndown`,
+        `${basePath}/projects/${project}/iterations/${iteration}/burndown`,
       );
 
       if (!response.ok) {
