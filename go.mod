@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/adhocore/gronx v1.8.1
-	github.com/go-playground/validator/v10 v10.21.0
+	github.com/go-playground/validator/v10 v10.22.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.9.0
