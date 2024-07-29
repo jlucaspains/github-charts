@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@playwright/test": "^1.45.2",
+    "@playwright/test": "^1.45.3",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
-    "@types/node": "^20.14.11",
+    "@types/node": "^22.0.0",
     "svelte": "^4.2.12",
-    "vite": "^5.3.4"
+    "vite": "^5.3.5"
   },
   "dependencies": {
     "chart.js": "^4.4.3"
