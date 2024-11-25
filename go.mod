@@ -4,11 +4,11 @@ go 1.22.0
 
 require (
 	github.com/Khan/genqlient v0.7.0
-	github.com/adhocore/gronx v1.19.3
-	github.com/go-playground/validator/v10 v10.22.1
+	github.com/adhocore/gronx v1.19.5
+	github.com/go-playground/validator/v10 v10.23.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
